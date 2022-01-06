@@ -1,0 +1,17 @@
+{
+  "name": "rhapsew",
+  "scripts": {
+    "start": "imba -w server.imba",
+    "build": "imba build server.imba"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "imba": "^2.0.0-alpha.199"
+  },
+  "repository": "justlilith/rhapsew",
+  "description": "Sewing app",
+  "version": "0.0.1",
+  "homepage": "https://github.com/justlilith/rhapsew",
+  "author": "Lilith (https://github.com/justlilith)",
+  "license": "ISC"
+}
