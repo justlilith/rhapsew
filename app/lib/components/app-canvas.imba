@@ -1,9 +1,14 @@
+import * as Helpers from '$lib/ts/helpers'
+
+
 tag app-canvas
-	<self.self>
-		<p> "Test"
-		<canvas>
+	<self.canvas@click=(Helpers.handleClick!)>
+		<section>
+			<p draggable="true"> "Test"
+		
 # CSS
 
-# css .self
+css .canvas d:flex fld:column h:100% bgc:#666666
+	section h:100% flg:100
 
 export default <app-canvas>

@@ -4,7 +4,9 @@ import app-top-bar from '$lib/components/app-top-bar'
 
 let state =
 	{
-		currentTheme:'dark'
+		currentTheme: 'dark'
+		units: 'imperial'
+		scale: 1.0
 	}
 
 tag app
@@ -24,5 +26,6 @@ global css html
 	ff:sans
 css .app d:flex fld:column m:auto ta:left min-height:100vh
 	.content flg:100
-	
+
 css .dark bg:gray7 c:white
+css .light bg:gray2 c:black
