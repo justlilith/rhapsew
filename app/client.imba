@@ -15,6 +15,7 @@ let state =
 		selectedPoint: null
 		menuX: null
 		menuY: null
+		moving: null
 	}
 
 tag app

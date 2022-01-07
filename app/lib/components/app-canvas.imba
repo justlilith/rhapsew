@@ -13,21 +13,22 @@ tag app-canvas
 		console.log data.parent
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,100) do
+		setInterval(&,20) do # renderLoop
 			unless data.pieces.length == 0
 				data.pieces.forEach do(piece)
-					PieceOps.renderPiece piece
+					PieceOps.renderPiece {data, piece}
+					piece.points.forEach do(point)
+						PieceOps.renderPoint {data, id: point.id, point}
 
 		
-	# <self#canvas @click.prevent=(do points = points.concat (PieceOps.addPoint {parent: '#canvas', event:e, pieceId:12}); console.log points)
 	<self#canvas @click=(do (data = AppOps.handleClick {event: e, data}))
 	# @mousemove=(do AppOps.handleMove({points: data.pieces[0].points, event: e, parent: '#canvas'}))
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
 	@mousedown=(do (if data.selectedPoint then data.moving = true))
 	@mouseup=(do (data.moving = false))
 	>
-		<button @click.prevent=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
-		<button @mousemove=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
+		# <button @click.prevent=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
+		# <button @mousemove=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
 
 		if data..menu == true
 			<context-menu bind=data>

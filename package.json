@@ -1,5 +1,7 @@
 {
   "name": "rhapsew",
+  "type": "module",
+  "types": "./app/lib/global.d.ts",
   "scripts": {
     "start": "imba -w server.imba",
     "build": "imba build server.imba"

@@ -4,7 +4,7 @@ import { nanoid } from 'nanoid'
 class Piece {
   constructor() {
   }
-  points: []
+  points:Array<Point>
   name = "init"
   closed: false
 }
