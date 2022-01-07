@@ -13,7 +13,7 @@ tag app-canvas
 		console.log data.parent
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,20) do # renderLoop
+		setInterval(&,200) do # renderLoop
 			unless data.pieces.length == 0
 				data.pieces.forEach do(piece)
 					PieceOps.renderPiece {data, piece}

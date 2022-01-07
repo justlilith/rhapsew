@@ -14,7 +14,7 @@ type addPointArgs = {
   event: MouseEvent
   data: State
 }
-function addPoint (args:addPointArgs) {
+function addPoint (args:addPointArgs):Point {
   // console.log(args.event)
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
@@ -50,8 +50,11 @@ interface RenderPieceArgs {
 }
 function renderPiece (args:RenderPieceArgs) {
   const draw = AppOps.initSVGCanvas(args.data)
-  draw.find('.piece').forEach(element => element.remove())
-  
+  if (draw.find(`[data-piece = "${args.piece}"`)?.[0]) {
+    if (args.piece != draw.find(`[data-piece = "${args.piece}"`)[0].data("piece")) {
+      draw.find('.piece').forEach(element => element.remove())
+    }
+  }
   let renderedPath = `M ${args.piece.points[0].x} ${args.piece.points[0].y}`
   // args.points = args.points.slice(1)
   args.piece.points.forEach((point, index) => {
@@ -80,13 +83,17 @@ function renderPiece (args:RenderPieceArgs) {
   if (args.piece.closed) {
     renderedPath += ` z`
   }
-  draw.find('.piece').forEach(element => element.remove())
+  // draw.find('.piece').forEach(element => element.remove())
   const renderedPiece = SVG()
   .path(renderedPath)
   .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none", stroke:"cyan"})
+  .stroke({color:"cyan", width:10})
   .addClass('piece')
+  .data("pieceData", args.piece)
   .click((event) => {
-    addPoint({event, data: args.data})
+    console.log('path clicked')
+    console.log(args.data)
+    args.data.pieces[0].points = args.data.pieces[0].points.concat(addPoint({event, data: args.data}))
   })
   draw.add(renderedPiece)
 }
