@@ -2,10 +2,12 @@ import { SVG } from '@svgdotjs/svg.js'
 import { Piece, Point } from '$lib/ts/classes'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import { nanoid } from 'nanoid'
+import * as F from 'futil-js'
+import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
 
-function addPiece (data:State|any) {
+function addPiece (data:State|any):State {
   data.pieces = data.pieces.concat(new Piece())
   return data
 }
@@ -13,6 +15,7 @@ function addPiece (data:State|any) {
 type addPointArgs = {
   event: MouseEvent
   data: State
+  index: number
 }
 function addPoint (args:addPointArgs):Point {
   // console.log(args.event)
@@ -25,7 +28,7 @@ function addPoint (args:addPointArgs):Point {
   // if (args.activePoint) {
   //   draw.add(SVG().path())
   // }
-  const point = new Point({...coords, active: true, id})
+  const point = new Point({...coords, active: true, id, index: args.index})
   switch (args.event.altKey) {
     case true:
     point.type = "handle"
@@ -49,12 +52,9 @@ interface RenderPieceArgs {
   piece: Piece  
 }
 function renderPiece (args:RenderPieceArgs) {
+  // console.log(args.piece)
   const draw = AppOps.initSVGCanvas(args.data)
-  if (draw.find(`[data-piece = "${args.piece}"`)?.[0]) {
-    if (args.piece != draw.find(`[data-piece = "${args.piece}"`)[0].data("piece")) {
-      draw.find('.piece').forEach(element => element.remove())
-    }
-  }
+  
   let renderedPath = `M ${args.piece.points[0].x} ${args.piece.points[0].y}`
   // args.points = args.points.slice(1)
   args.piece.points.forEach((point, index) => {
@@ -68,10 +68,10 @@ function renderPiece (args:RenderPieceArgs) {
         } else {
           renderedPath += ` L ${point.x} ${point.y}`
         }
-        if (args.piece.points[index -1]) {
+        if (args.piece.points[index - 1]) {
           draw.find(`[data-sourcePointId="${point.id}"]`) ? draw.find(`[data-sourcePointId="${point.id}"]`).forEach(line => line.remove()) : null
-          let controlPath = [point.x, point.y, args.piece.points[index -1].x, args.piece.points[index -1].y]
-          let controlLine = SVG().line(controlPath).stroke('blue').addClass('control-line').data("sourcePointId",point.id)
+          let controlPath = [point.x, point.y, args.piece.points[index - 1].x, args.piece.points[index - 1].y]
+          let controlLine = SVG().line(controlPath).stroke('blue').addClass('control-line').data("sourcePointId", point.id)
           draw.add(controlLine)
         }
         break
@@ -86,16 +86,47 @@ function renderPiece (args:RenderPieceArgs) {
   // draw.find('.piece').forEach(element => element.remove())
   const renderedPiece = SVG()
   .path(renderedPath)
-  .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none", stroke:"cyan"})
-  .stroke({color:"cyan", width:10})
+  .data("piece", args.piece)
+  .data("id", args.piece.id)
+  .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none"})
+  .stroke({color:"hsl(180, 100%, 50%)", width:2})
   .addClass('piece')
-  .data("pieceData", args.piece)
+  
+  const renderedPieceThickStroke = SVG()
+  .path(renderedPath)
+  .data("piece", args.piece)
+  .data("id", args.piece.id)
+  .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none", stroke:"cyan"})
+  .stroke({color:"hsla(0, 0%, 0%, 0.1)", width:10})
+  .addClass('piece')
   .click((event) => {
     console.log('path clicked')
     console.log(args.data)
-    args.data.pieces[0].points = args.data.pieces[0].points.concat(addPoint({event, data: args.data}))
+    console.log(args.piece)
+    args.data.pieces[0].points = args.data.pieces[0].points.concat(addPoint({event, data: args.data, index: args.data.pieces[0].points.length}))
   })
-  draw.add(renderedPiece)
+  
+  const domPiece = draw.find(`[data-id = "${args.piece.id}"`)?.[0]
+  if (domPiece) {
+    if (!_.isEqual(AppOps.shallowCopy(domPiece.data("piece")), AppOps.shallowCopy(args.piece))){
+      console.log('Rhapsew [Info]: Rerendering piece')
+      // if (AppOps.shallowCopy(args.piece) != AppOps.shallowCopy(draw.find(`[data-piece = "${AppOps.shallowCopy(args.piece)}"`)?.[0].data("piece"))) {
+      draw.find('.piece').forEach(element => element.remove())
+      draw.add(renderedPiece)
+      draw.add(renderedPieceThickStroke)
+      args.piece.points.forEach(point => {
+        renderPoint({id: point.id, data: args.data, point})
+      })
+      // }
+    }
+  } else {
+    console.log('not found')
+    draw.add(renderedPiece)
+    draw.add(renderedPieceThickStroke)
+    args.piece.points.forEach(point => {
+      renderPoint({id: point.id, data: args.data, point})
+    })
+  }
 }
 
 type RenderPointArgs = {
@@ -108,26 +139,23 @@ function renderPoint (args:RenderPointArgs) {
   
   const domPoint = draw.find(`[data-id = "${args.point.id}"]`)[0]
   
-  if (!domPoint || domPoint.data('point').x != args.point.x || domPoint.data('point').y != args.point.y) {
-    console.log('purging')
-    // .forEach(element => element.remove())
-    draw.find(`[data-id = "${args.id}"]`).forEach(element => element.remove())
-    draw.find(`.selection-box`).forEach(element => element.remove())
-    
-    const renderedPoint = SVG()
-    .circle()
-    .attr({fill: 'black', cx: args.point.x, cy: args.point.y})
-    .stroke({color:"hsla(0,0%,0%,0)", width:15})
-    .size(10)
-    .addClass('anchor')
-    .data('id', args.id)
-    .data('point', args.point)
-    
-    draw.add(renderedPoint)
-  }
+  console.log('Rhapsew [Info]: Purging DOM point')
+  draw.find(`[data-id = "${args.id}"]`).forEach(element => element.remove())
+  // draw.find(`.selection-box`).forEach(element => element.remove())
+  
+  const renderedPoint = SVG()
+  .circle()
+  .attr({fill: 'black', cx: args.point.x, cy: args.point.y})
+  .stroke({color:"hsla(0,0%,0%,0)", width:15})
+  .size(10)
+  .addClass('anchor')
+  .data('id', args.id)
+  .data('point', args.point)
+  
+  draw.add(renderedPoint)
   const domSelectionBox = draw.find(`.selection-box`)[0]
   
-  const selectedPoint = SVG()
+  const selectionBox = SVG()
   .rect()
   .attr({fill:"none", width: 20, height: 20, x: args.point.x -10, y: args.point.y -10})
   .stroke({color:"hsla(0,0%,0%,0.5)", width:2})
@@ -139,10 +167,12 @@ function renderPoint (args:RenderPointArgs) {
     if (domSelectionBox) {
       domSelectionBox.remove()
     }
-    draw.add(selectedPoint)
+    draw.add(selectionBox)
     break
     default:
-    // console.log('point selected')
+      console.log(args.data.selectedPoint)
+      console.log(args.id)
+      // draw.add(selectionBox)
   }
 }
 

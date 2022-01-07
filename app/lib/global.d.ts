@@ -2,7 +2,7 @@ interface State {
   currentTheme: string
   units: string
   scale: number
-  pieces: Array<Piece>
+  pieces: Piece[]
   status: string
   parent: string
   menu: boolean
@@ -13,9 +13,10 @@ interface State {
 }
 
 interface Piece {
-  points: Array<Point>
+  points: Point[]
   name: string
   closed: boolean
+  id: string
 }
 
 interface Point {
@@ -24,6 +25,7 @@ interface Point {
   type: string
   active: boolean
   id: string
+  index: number
 }
 
 interface EventTarget {

@@ -19,5 +19,5 @@
 			"$lib/*": ["app/lib/*"]
 		}
 	},
-	"include": ["app/**/*.d.ts", "app/**/*.js", "app/**/*.ts", "app/**/*.imba"]
+	"include": ["app/**/*.d.ts", "app/**/*.js", "app/**/*.ts", "app/**/*.imba", "global.d.ts", "types.ts"]
 }

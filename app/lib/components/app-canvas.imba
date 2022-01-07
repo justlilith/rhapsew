@@ -1,5 +1,6 @@
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as AppOps from '$lib/ts/helpers/appOps'
+import * as KeyboardOps from '$lib/ts/helpers/keyboardOps'
 import context-menu from '$lib/components/context-menu'
 
 # let points = [] # this is one piece
@@ -7,18 +8,18 @@ import context-menu from '$lib/components/context-menu'
 # let data
 
 tag app-canvas
-	# prop data
+	prop data
 	def mount
 		console.log "awakened"
 		console.log data.parent
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,200) do # renderLoop
+		setInterval(&,200) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
-				data.pieces.forEach do(piece)
-					PieceOps.renderPiece {data, piece}
-					piece.points.forEach do(point)
-						PieceOps.renderPoint {data, id: point.id, point}
+				for piece of data.pieces
+					PieceOps.renderPiece {piece, data}
+					# piece.points.forEach do(point)
+					# 	PieceOps.renderPoint {data, id: point.id, point}
 
 		
 	<self#canvas @click=(do (data = AppOps.handleClick {event: e, data}))
@@ -26,6 +27,8 @@ tag app-canvas
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
 	@mousedown=(do (if data.selectedPoint then data.moving = true))
 	@mouseup=(do (data.moving = false))
+	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
+	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 		# <button @click.prevent=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
 		# <button @mousemove=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
@@ -36,5 +39,7 @@ tag app-canvas
 
 css #canvas h:100% flg:100
 global css .svg h:100% w:100%
+global css .anchor zi:20 pos:relative
+global css .piece zi:10 pos:relative
 
 export default <app-canvas>

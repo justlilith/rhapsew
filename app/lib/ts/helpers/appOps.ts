@@ -5,6 +5,10 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 
 const TOPBARHEIGHT = 30
 
+function shallowCopy (arg) {
+  return JSON.parse(JSON.stringify(arg))
+}
+
 function toggleContextMenu (args) {
   switch (args.state) {
     case 'on':
@@ -25,6 +29,7 @@ interface HandleClickArgs {
 }
 function handleClick (args:HandleClickArgs) {
   console.log(args.event)
+  const id = args.event.target.getAttribute('data-id') ?? null
   if (args.event.target.classList.contains('svg')) {
     switch (args.event.button) {
       case 2:
@@ -45,14 +50,16 @@ function handleClick (args:HandleClickArgs) {
       let points = []
       
       if (args.data.pieces.length == 0) {
-        args.data.pieces = [PieceOps.addPiece(args.data)]
+        args.data.pieces = PieceOps.addPiece(args.data).pieces
       }
       if (args?.data?.pieces?.[0].points?.slice(-1)?.[0]?.active) {
         // args.points.slice(-1)[0].active = false
-        points = [...args.data.pieces[0].points, PieceOps.addPoint(args)]
+        points = [...args.data.pieces[0].points, PieceOps.addPoint({...args, index: args.data.pieces[0].points.length})]
       }
       else {
-        points = args.data?.pieces[0]?.points ? [...args.data.pieces[0].points, PieceOps.addPoint(args)] : [PieceOps.addPoint(args)]
+        points = args.data?.pieces[0]?.points
+        ? [...args.data.pieces[0].points, PieceOps.addPoint({...args, index: args.data.pieces[0].points.length})]
+        : [PieceOps.addPoint({...args, index: 0})]
       }
       args.data.pieces[0].points = points
     }
@@ -71,7 +78,8 @@ function handleClick (args:HandleClickArgs) {
       case false:
       default:
       args.data.selectedPoint = args.event.target.getAttribute('data-id')
-      console.log(args.data.selectedPoint)
+      console.log(`Rhapsew [Info]: Selected Point: ${args.data.selectedPoint}`)
+      PieceOps.renderPoint({data:args.data, id:args.event.target.getAttribute('data-id'), point:args.data.pieces[0].points.filter(point => point.id == id)[0]})
     }
     console.log('finished')
   }
@@ -97,7 +105,7 @@ function handleMove (args:HandleMoveArgs) {
     
     draw.add(activeLine)
   }
-
+  
   if (args.data.selectedPoint && args.data.moving) {
     let id = args.data.selectedPoint
     // SVG().find(`[data-id = "${id}"]`)[0].remove()
@@ -132,7 +140,8 @@ function writeToStatus () {
 }
 
 export {
-  handleClick
+  shallowCopy
+  , handleClick
   , handleMove
   , init
   , initSVGCanvas
