@@ -2,15 +2,20 @@ import { SVG } from '@svgdotjs/svg.js'
 import { Piece, Point } from '$lib/ts/classes'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import { nanoid } from 'nanoid'
+import type { State } from 'app/globals'
 
 const TOPBARHEIGHT = 30
 
-function addPiece (data) {
-  data.pieces.concat(new Piece())
+function addPiece (data:State|any) {
+  data.pieces = data.pieces.concat(new Piece())
   return data
 }
 
-function addPoint (args) {
+type addPointArgs = {
+  event: MouseEvent
+  activePoint: any
+}
+function addPoint (args:addPointArgs) {
   // console.log(args.event)
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args)

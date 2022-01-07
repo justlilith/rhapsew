@@ -8,8 +8,8 @@ function toggleContextMenu (args) {
   switch (args.state) {
     case 'on':
     args.data.menu = true
-    args.data.menuX = args.x
-    args.data.menuY = args.y
+    args.data.menuX = args.x ?? 0
+    args.data.menuY = args.y ?? 0
     break
     case 'off':
     default:
@@ -110,5 +110,6 @@ export {
   , handleMove
   , init
   , initSVGCanvas
+  , toggleContextMenu
   , writeToStatus
 }
