@@ -23,16 +23,12 @@ tag app-canvas
 
 		
 	<self#canvas @click=(do (data = AppOps.handleClick {data, event: e}))
-	# @mousemove=(do AppOps.handleMove({points: data.pieces[0].points, event: e, parent: '#canvas'}))
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
-	# @mousedown=(do (if data.selectedPoint then data.moving = true))
 	@mousedown=(do (data = AppOps.handleMousedown {data, event: e}))
 	@mouseup=(do (data = AppOps.handleMouseup {data, event: e}))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
-		# <button @click.prevent=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
-		# <button @mousemove=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
 
 		if data..menu
 			<context-menu bind=data>

@@ -11,7 +11,6 @@ tag context-menu
 	def addPiece(event)
 		data = PieceOps.addPiece {data\State, event}
 		data = AppOps.toggleContextMenu {data, state: 'off'}
-		data.pieces.slice(-1).points[0].active = true
 	# def deletePiece
 
 	<self>

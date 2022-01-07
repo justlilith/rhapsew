@@ -46,25 +46,25 @@ function movePoint (args) {
 }
 
 function renderPiece (args:RenderPieceArgs) {
+  let data = args.data
+  let piece = args.piece
   // console.log(args.piece)
-  const draw = AppOps.initSVGCanvas(args.data)
+  const draw = AppOps.initSVGCanvas(data)
   
-  let renderedPath = `M ${args.piece.points[0].x} ${args.piece.points[0].y}`
-  // args.points = args.points.slice(1)
-  args.piece.points.forEach((point, index) => {
+  let renderedPath = `M ${piece.points[0].x} ${piece.points[0].y}`
+  
+  piece.points.forEach((point, index) => {
     if (index - 1 >= 0){
-      // const dx = point.x - args.points[index -1].x
-      // const dy = point.y - args.points[index -1].y
       switch (point?.type) {
         case "handle":
-        if (args.piece.points[index + 1]) {
-          renderedPath += ` S ${point.x} ${point.y} ${args.piece.points[index +1].x} ${args.piece.points[index +1].y}`
+        if (piece.points[index + 1]) {
+          renderedPath += ` S ${point.x} ${point.y} ${piece.points[index +1].x} ${piece.points[index +1].y}`
         } else {
           renderedPath += ` L ${point.x} ${point.y}`
         }
-        if (args.piece.points[index - 1]) {
+        if (piece.points[index - 1]) {
           draw.find(`[data-sourcePointId="${point.id}"]`) ? draw.find(`[data-sourcePointId="${point.id}"]`).forEach(line => line.remove()) : null
-          let controlPath = [point.x, point.y, args.piece.points[index - 1].x, args.piece.points[index - 1].y]
+          let controlPath = [point.x, point.y, piece.points[index - 1].x, piece.points[index - 1].y]
           let controlLine = SVG().line(controlPath).stroke('blue').addClass('control-line').data("sourcePointId", point.id)
           draw.add(controlLine)
         }
@@ -74,42 +74,41 @@ function renderPiece (args:RenderPieceArgs) {
       }
     }
   })
-  if (args.piece.closed) {
+  if (piece.closed) {
     renderedPath += ` z`
   }
   // draw.find('.piece').forEach(element => element.remove())
   const renderedPiece = SVG()
   .path(renderedPath)
-  .data("piece", args.piece)
-  .data("id", args.piece.id)
-  .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none"})
+  .data("piece", piece)
+  .data("id", piece.id)
+  .attr({x: piece.points[0].x, y: piece.points[0].y, fill:"none"})
   .stroke({color:"hsl(180, 100%, 50%)", width:2})
   .addClass('piece')
   
   const renderedPieceThickStroke = SVG()
   .path(renderedPath)
-  .data("piece", args.piece)
-  .data("id", args.piece.id)
-  .attr({x: args.piece.points[0].x, y: args.piece.points[0].y, fill:"none", stroke:"cyan"})
+  .data("piece", piece)
+  .data("id", piece.id)
+  .attr({x: piece.points[0].x, y: piece.points[0].y, fill:"none", stroke:"cyan"})
   .stroke({color:"hsla(0, 0%, 0%, 0.1)", width:10})
   .addClass('piece')
   .click((event) => {
     console.log('path clicked')
-    console.log(args.data)
-    console.log(args.piece)
-    args.data.pieces[0].points = args.data.pieces[0].points.concat(addPoint({event, data: args.data, index: args.data.pieces[0].points.length}))
+    console.log(data)
+    console.log(piece)
+    data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data: data, index: data.selectedPiece.points.length}))
   })
   
-  const domPiece = draw.find(`[data-id = "${args.piece.id}"`)?.[0]
+  const domPiece = draw.find(`[data-id = "${piece.id}"`)?.[0]
   if (domPiece) {
-    if (!_.isEqual(AppOps.shallowCopy(domPiece.data("piece")), AppOps.shallowCopy(args.piece))){
+    if (!_.isEqual(AppOps.shallowCopy(domPiece.data("piece")), AppOps.shallowCopy(piece))){
       console.log('Rhapsew [Info]: Rerendering piece')
-      // if (AppOps.shallowCopy(args.piece) != AppOps.shallowCopy(draw.find(`[data-piece = "${AppOps.shallowCopy(args.piece)}"`)?.[0].data("piece"))) {
       draw.find('.piece').forEach(element => element.remove())
       draw.add(renderedPiece)
       draw.add(renderedPieceThickStroke)
-      args.piece.points.forEach(point => {
-        renderPoint({id: point.id, data: args.data, point})
+      piece.points.forEach(point => {
+        renderPoint({id: point.id, data, point})
       })
       // }
     }
@@ -117,8 +116,8 @@ function renderPiece (args:RenderPieceArgs) {
     console.log('not found')
     draw.add(renderedPiece)
     draw.add(renderedPieceThickStroke)
-    args.piece.points.forEach(point => {
-      renderPoint({id: point.id, data: args.data, point})
+    piece.points.forEach(point => {
+      renderPoint({id: point.id, data, point})
     })
   }
 }
@@ -128,7 +127,7 @@ function renderPoint (args:RenderPointArgs) {
   
   const domPoint = draw.find(`[data-id = "${args.point.id}"]`)[0]
   
-  console.log(`Rhapsew [Info]: Purging DOM point: ${args.id}}`)
+  console.log(`Rhapsew [Info]: Purging DOM point: ${args.id}`)
   draw.find(`[data-id = "${args.id}"]`).forEach(element => element.remove())
   // draw.find(`.selection-box`).forEach(element => element.remove())
   
