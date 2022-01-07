@@ -6,6 +6,7 @@ interface State {
   status: string
   parent: string
   menu: boolean
+  selectedPiece: Piece|null
   selectedPoint: string
   menuX: number|null
   menuY: number|null
@@ -31,4 +32,45 @@ interface Point {
 interface EventTarget {
   getAttribute(x:string)
   classList: DOMTokenList
+}
+
+
+
+
+
+
+interface addPointArgs {
+  event: MouseEvent
+  data: State
+  index: number
+}
+
+interface HandleKeyboardArgs {
+  data: State
+}
+
+interface HandleMouseArgs {
+  data: State
+  event: MouseEvent
+}
+
+interface HandleMoveArgs {
+  data: State
+  event: MouseEvent
+}
+
+interface PieceArgs {
+  data: State
+  event: MouseEvent
+}
+
+interface RenderPieceArgs {
+  data: State
+  piece: Piece  
+}
+
+interface RenderPointArgs {
+  id: string
+  data: State
+  point: Point
 }

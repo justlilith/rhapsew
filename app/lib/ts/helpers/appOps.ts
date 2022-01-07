@@ -28,96 +28,128 @@ interface HandleClickArgs {
   data: State
 }
 function handleClick (args:HandleClickArgs) {
-  console.log(args.event)
-  const id = args.event.target.getAttribute('data-id') ?? null
-  if (args.event.target.classList.contains('svg')) {
-    switch (args.event.button) {
-      case 2:
-      args.data = toggleContextMenu({data: args.data, state:'on', x:args.event.clientX, y:args.event.clientY})
+  let data= args.data
+  let event= args.event
+  // console.log(event)
+  const id = event.target.getAttribute('data-id') ?? null
+  if (event.target.classList.contains('svg')) {
+    switch (event.button) {
+      case 2: // right-click
+      data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
       console.log('correct')
-      let draw = initSVGCanvas(args.data)
+      let draw = initSVGCanvas(data)
       draw.find('.activeLine').forEach(element => element.remove())
       try {
-        args.data.pieces[0].points.slice(-1)[0].active = false
+        data.pieces.forEach(piece => {
+          // piece.points.slice(-1)[0].active = false
+        })
       } catch (e) {
         console.warn(e)
       }
       break
       case 0:
-      default:
-      args.data = toggleContextMenu({data: args.data, state:'off'})
-      args.data.selectedPoint = null
+      default: // left-click
+      data = toggleContextMenu({data, state:'off'})
+      data.selectedPoint = null
       let points = []
       
-      if (args.data.pieces.length == 0) {
-        args.data.pieces = PieceOps.addPiece(args.data).pieces
+      if (data.selectedPiece) {
+        // data = PieceOps.addPiece({data, event})
+        
+        if (data.selectedPiece && args?.data?.pieces?.[0].points?.slice(-1)?.[0]?.active) {
+          // args.points.slice(-1)[0].active = false
+          points = [...data.pieces[0].points, PieceOps.addPoint({...args, index: data.pieces[0].points.length})]
+          data.pieces[0].points = points
+        }
+        else {
+          points = data?.pieces[0]?.points
+          ? [...data.pieces[0].points, PieceOps.addPoint({...args, index: data.pieces[0].points.length})]
+          : [PieceOps.addPoint({...args, index: 0})]
+          data.pieces[0].points = points
+        }
       }
-      if (args?.data?.pieces?.[0].points?.slice(-1)?.[0]?.active) {
-        // args.points.slice(-1)[0].active = false
-        points = [...args.data.pieces[0].points, PieceOps.addPoint({...args, index: args.data.pieces[0].points.length})]
-      }
-      else {
-        points = args.data?.pieces[0]?.points
-        ? [...args.data.pieces[0].points, PieceOps.addPoint({...args, index: args.data.pieces[0].points.length})]
-        : [PieceOps.addPoint({...args, index: 0})]
-      }
-      args.data.pieces[0].points = points
     }
   }
   
-  if (args.event.target.classList.contains('anchor')) {
-    switch (args.data.pieces[0].points.slice(-1)[0].active) {
+  if (event.target.classList.contains('anchor')) {
+    switch (data.pieces[0].points.slice(-1)[0].active) {
       case true:
-      args.data.pieces[0].points.slice(-1)[0].active = false
-      let draw = initSVGCanvas(args.data)
+      data.pieces[0].points.slice(-1)[0].active = false
+      let draw = initSVGCanvas(data)
       draw.find('.activeLine').forEach(element => element.remove())
-      if (args.event.target.getAttribute('data-id') == args.data.pieces[0].points[0].id) {
-        args.data.pieces[0].closed = true
+      if (event.target.getAttribute('data-id') == data.pieces[0].points[0].id) {
+        data.pieces[0].closed = true
       }
       break
       case false:
       default:
-      args.data.selectedPoint = args.event.target.getAttribute('data-id')
-      console.log(`Rhapsew [Info]: Selected Point: ${args.data.selectedPoint}`)
-      PieceOps.renderPoint({data:args.data, id:args.event.target.getAttribute('data-id'), point:args.data.pieces[0].points.filter(point => point.id == id)[0]})
+      data.selectedPoint = event.target.getAttribute('data-id')
+      console.log(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
+      PieceOps.renderPoint({data:data, id:event.target.getAttribute('data-id'), point:data.pieces[0].points.filter(point => point.id == id)[0]})
     }
     console.log('finished')
   }
   
-  return args.data
+  return data
 }
 
-interface HandleMoveArgs {
+interface HandleMouseArgs {
   data: State
   event: MouseEvent
 }
 
+function handleMousedown (args:HandleMouseArgs) {
+  let data = args.data
+  let event = args.event
+
+  if (event.target.classList.contains(`anchor`)) {
+    console.log(data)
+    let id = event.target.getAttribute('data-id')
+    console.log(`Raphsew [Info]: Point selected: ${id}`)
+    data.selectedPoint = id
+    data.moving = true
+  }
+  return data  
+}
+
+function handleMouseup (args:HandleMouseArgs) {
+  let data = args.data
+  let event = args.event
+
+  data.moving = false
+  return data  
+}
+
+
 function handleMove (args:HandleMoveArgs) {
-  let draw = initSVGCanvas(args.data)
+  let data = args.data
+  let event = args.event
+
+  let draw = initSVGCanvas(data)
   
-  if (args.data?.pieces[0]?.points?.slice(-1)?.[0]?.active) {
+  if (data?.pieces[0]?.points?.slice(-1)?.[0]?.active) {
     draw.find('.activeLine').forEach(element => element.remove())
-    let mousePoint = SVG(`svg`).point(args.event.clientX, args.event.clientY)
+    let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
     let activeLine = SVG()
-    .line([args.data.pieces[0].points.slice(-1)[0].x, args.data.pieces[0].points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
+    .line([data.pieces[0].points.slice(-1)[0].x, data.pieces[0].points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
     .addClass('activeLine')
     .stroke("red")
     
     draw.add(activeLine)
   }
   
-  if (args.data.selectedPoint && args.data.moving) {
-    let id = args.data.selectedPoint
+  if (data.selectedPoint && data.moving) {
+    let id = data.selectedPoint
     // SVG().find(`[data-id = "${id}"]`)[0].remove()
-    args.data.pieces[0].points = args.data.pieces[0].points.map(point => {
-      if (point.id == args.data.selectedPoint) {
-        point.x = SVG(`svg`).point(args.event.clientX, args.event.clientY).x
-        point.y = SVG(`svg`).point(args.event.clientX, args.event.clientY).y
+    data.pieces[0].points = data.pieces[0].points.map(point => {
+      if (point.id == data.selectedPoint) {
+        point.x = SVG(`svg`).point(event.clientX, event.clientY).x
+        point.y = SVG(`svg`).point(event.clientX, event.clientY).y
       }
       return point
     })
   }
-  return args.data
+  return data
 }
 
 function init (data) {
@@ -142,6 +174,8 @@ function writeToStatus () {
 export {
   shallowCopy
   , handleClick
+  , handleMousedown
+  , handleMouseup
   , handleMove
   , init
   , initSVGCanvas

@@ -14,7 +14,7 @@ tag app-canvas
 		console.log data.parent
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,200) do # renderLoop, 60-ish fps
+		setInterval(&,100) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}
@@ -22,24 +22,27 @@ tag app-canvas
 					# 	PieceOps.renderPoint {data, id: point.id, point}
 
 		
-	<self#canvas @click=(do (data = AppOps.handleClick {event: e, data}))
+	<self#canvas @click=(do (data = AppOps.handleClick {data, event: e}))
 	# @mousemove=(do AppOps.handleMove({points: data.pieces[0].points, event: e, parent: '#canvas'}))
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
-	@mousedown=(do (if data.selectedPoint then data.moving = true))
-	@mouseup=(do (data.moving = false))
+	# @mousedown=(do (if data.selectedPoint then data.moving = true))
+	@mousedown=(do (data = AppOps.handleMousedown {data, event: e}))
+	@mouseup=(do (data = AppOps.handleMouseup {data, event: e}))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 		# <button @click.prevent=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
 		# <button @mousemove=(do PieceOps.renderPiece {points: data.pieces[0].points})> "render"
 
-		if data..menu == true
+		if data..menu
 			<context-menu bind=data>
+			
 # CSS
 
 css #canvas h:100% flg:100
 global css .svg h:100% w:100%
 global css .anchor zi:20 pos:relative
+global css .anchor@hover fill:white
 global css .piece zi:10 pos:relative
 
 export default <app-canvas>

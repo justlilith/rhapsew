@@ -1,9 +1,11 @@
 import { SVG } from '@svgdotjs/svg.js'
 import { nanoid } from 'nanoid'
+import * as PieceOps from './helpers/pieceOps'
 
 class Piece {
-  constructor() {
+  constructor(args:PieceArgs) {
     this.id = nanoid()
+    this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0})]
   }
   points: Array<Point>
   name: string = "init"

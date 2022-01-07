@@ -3,7 +3,7 @@ import app-canvas from '$lib/components/app-canvas'
 import app-top-bar from '$lib/components/app-top-bar'
 import * as AppOps from '$lib/ts/helpers/appOps'
 
-let state =
+let state\State =
 	{
 		currentTheme: 'dark'
 		units: 'imperial'
@@ -12,6 +12,7 @@ let state =
 		status: "Idle"
 		parent: '#canvas'
 		menu: false
+		selectedPiece: null
 		selectedPoint: null
 		menuX: null
 		menuY: null

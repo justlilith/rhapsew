@@ -5,9 +5,6 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 // import type { State } from 'app/lib/global'
 
 
-interface HandleKeyboardArgs {
-  data: State
-}
 
 function deleteKey (args: HandleKeyboardArgs):State {
   let data = args.data

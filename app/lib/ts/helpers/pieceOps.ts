@@ -7,16 +7,14 @@ import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
 
-function addPiece (data:State|any):State {
-  data.pieces = data.pieces.concat(new Piece())
-  return data
+function addPiece (args:PieceArgs):State {
+  let newPiece = new Piece({data: args.data, event: args.event})
+  args.data.pieces = args.data.pieces.concat(newPiece)
+  args.data.selectedPiece = newPiece
+  console.log(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
+  return args.data
 }
 
-type addPointArgs = {
-  event: MouseEvent
-  data: State
-  index: number
-}
 function addPoint (args:addPointArgs):Point {
   // console.log(args.event)
   const id = nanoid()
@@ -47,10 +45,6 @@ function movePoint (args) {
   
 }
 
-interface RenderPieceArgs {
-  data: State
-  piece: Piece  
-}
 function renderPiece (args:RenderPieceArgs) {
   // console.log(args.piece)
   const draw = AppOps.initSVGCanvas(args.data)
@@ -129,17 +123,12 @@ function renderPiece (args:RenderPieceArgs) {
   }
 }
 
-type RenderPointArgs = {
-  id: string
-  data: State
-  point: Point
-}
 function renderPoint (args:RenderPointArgs) {
   const draw = AppOps.initSVGCanvas(args.data)
   
   const domPoint = draw.find(`[data-id = "${args.point.id}"]`)[0]
   
-  console.log('Rhapsew [Info]: Purging DOM point')
+  console.log(`Rhapsew [Info]: Purging DOM point: ${args.id}}`)
   draw.find(`[data-id = "${args.id}"]`).forEach(element => element.remove())
   // draw.find(`.selection-box`).forEach(element => element.remove())
   
