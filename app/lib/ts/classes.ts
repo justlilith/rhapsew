@@ -6,6 +6,7 @@ class Piece {
   constructor(args:PieceArgs) {
     this.id = nanoid()
     this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0})]
+    this.closed = false
   }
   points: Array<Point>
   name: string = "init"

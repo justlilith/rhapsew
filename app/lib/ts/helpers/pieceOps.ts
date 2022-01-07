@@ -41,10 +41,6 @@ function addPoint (args:addPointArgs):Point {
   return point
 }
 
-function movePoint (args) {
-  
-}
-
 function renderPiece (args:RenderPieceArgs) {
   let data = args.data
   let piece = args.piece
@@ -97,7 +93,9 @@ function renderPiece (args:RenderPieceArgs) {
     console.log('path clicked')
     console.log(data)
     console.log(piece)
-    data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data: data, index: data.selectedPiece.points.length}))
+    if (data.selectedPiece) {
+      data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data, index: data.selectedPiece.points.length}))
+    }
   })
   
   const domPiece = draw.find(`[data-id = "${piece.id}"`)?.[0]
@@ -158,9 +156,9 @@ function renderPoint (args:RenderPointArgs) {
     draw.add(selectionBox)
     break
     default:
-      console.log(args.data.selectedPoint)
-      console.log(args.id)
-      // draw.add(selectionBox)
+    console.log(args.data.selectedPoint)
+    console.log(args.id)
+    // draw.add(selectionBox)
   }
 }
 
@@ -168,7 +166,6 @@ function renderPoint (args:RenderPointArgs) {
 export {
   addPiece
   , addPoint
-  , movePoint
   , renderPiece
   , renderPoint
 }

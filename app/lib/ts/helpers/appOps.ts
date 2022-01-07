@@ -30,6 +30,9 @@ function handleClick (args:HandleClickArgs) {
   let data= args.data
   let event= args.event
   const id = event.target.getAttribute('data-id') ?? null
+  
+  let draw = initSVGCanvas(data)
+  
   console.log(event)
   
   if (event.target.classList.contains('svg')) {
@@ -37,14 +40,13 @@ function handleClick (args:HandleClickArgs) {
       case 2: // right-click
       data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
       console.log('correct')
-      let draw = initSVGCanvas(data)
       draw.find('.activeLine').forEach(element => element.remove())
       try {
-        data.pieces.forEach(piece => {
-          piece.points.forEach(point => {
-            point.active = false
-          })
-        })
+        // data.pieces.forEach(piece => {
+        //   piece.points.forEach(point => {
+        //     point.active = false
+        //   })
+        // })
       } catch (e) {
         console.warn(e)
       }
@@ -80,25 +82,23 @@ function handleClick (args:HandleClickArgs) {
   if (event.target.classList.contains('anchor')) {
     let id = event.target.getAttribute('data-id')
     let domPoint:Point = event.target.getAttribute('data-point')
+
     console.log(domPoint)
     data.selectedPiece = data.pieces.filter(piece => piece.points.filter(point => JSON.stringify(point) == JSON.stringify(domPoint)))[0]
     console.log(data.selectedPiece)
-    switch (data.selectedPiece.points.slice(-1)[0].active) {
-      case true:
-      data.selectedPiece.points.slice(-1)[0].active = false
-      let draw = initSVGCanvas(data)
-      draw.find('.activeLine').forEach(element => element.remove())
-      if (event.target.getAttribute('data-id') == data.selectedPiece.points[0].id) {
-        data.selectedPiece.closed = true
-      }
-      break
-      case false:
-      default:
-      data.selectedPoint = event.target.getAttribute('data-id')
-      console.log(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
-      // PieceOps.renderPoint({data:data, id:event.target.getAttribute('data-id'), point:data.selectedPiece.points.filter(point => point.id == id)[0]})
+    data.selectedPoint = id
+    console.log(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
+    
+    if (id == data.selectedPiece.points[0].id) {
+      data.selectedPiece.closed = true
     }
-    console.log('finished')
+
+    draw.find('.activeLine').forEach(element => element.remove())
+    
+    data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
+    
+    PieceOps.renderPiece({data, piece: data.selectedPiece})
+    console.log(data.selectedPiece)
   }
   
   return data
@@ -116,7 +116,10 @@ function handleMousedown (args:HandleMouseArgs) {
   if (event.target.classList.contains(`anchor`)) {
     console.log(data)
     let id = event.target.getAttribute('data-id')
-    console.log(`Raphsew [Info]: Point selected: ${id}`)
+    let domPoint:Point = event.target.getAttribute('data-point')
+    
+    console.log(`Rhapsew [Info]: Point selected: ${id}`)
+    data.selectedPiece = data.pieces.filter(piece => piece.points.filter(point => JSON.stringify(point) == JSON.stringify(domPoint)))[0]
     data.selectedPoint = id
     data.moving = true
   }
@@ -138,11 +141,11 @@ function handleMove (args:HandleMoveArgs) {
   
   let draw = initSVGCanvas(data)
   
-  if (data?.selectedPiece?.points?.slice(-1)?.[0]?.active) {
+  if (data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
     let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
     let activeLine = SVG()
-    .line([data.selectedPiece.points.slice(-1)[0].x, data.pieces[0].points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
+    .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
     .addClass('activeLine')
     .stroke("red")
     
