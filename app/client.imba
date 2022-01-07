@@ -8,9 +8,13 @@ let state =
 		currentTheme: 'dark'
 		units: 'imperial'
 		scale: 1.0
-		pieces: [[]]
+		pieces: []
 		status: "Idle"
 		parent: '#canvas'
+		menu: false
+		selectedPoint: null
+		menuX: null
+		menuY: null
 	}
 
 tag app

@@ -1,4 +1,13 @@
 import { SVG } from '@svgdotjs/svg.js'
+import { nanoid } from 'nanoid'
+
+class Piece {
+  constructor() {
+  }
+  points: []
+  name = "init"
+  closed: false
+}
 
 class Point {
   constructor(args) {
@@ -6,14 +15,16 @@ class Point {
     this.y = args.y
     this.type = args.type ?? "normal"
     this.active = args.active ?? false
+    this.id = args.id ?? nanoid()
   }
-  x = 0
-  y = 0
-  type = "normal"
-  active = false
-  
+  x: number
+  y: number
+  type: string
+  active: boolean
+  id: string
 }
 
 export {
-  Point
+  Piece
+  , Point
 }
