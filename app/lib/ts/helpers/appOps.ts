@@ -57,7 +57,7 @@ function handleClick (args:HandleClickArgs) {
   
   let draw = initSVGCanvas(data)
   
-  // console.log(event)
+  console.log(event)
   
   if (event.target.classList.contains('svg')) {
     switch (event.button) {
@@ -68,47 +68,56 @@ function handleClick (args:HandleClickArgs) {
       case 0:
       default: // left-click
       data = toggleContextMenu({data, state:'off'})
-      data.selectedPoint = null
       let points = []
+      data.selectedPoint = null
       
       if (data.selectedPiece) {
         if (!data.selectedPiece.closed) {
-          points = [...data.selectedPiece.points, PieceOps.addPoint({...args, index: data.selectedPiece.points.length, pieceId:data.selectedPiece.id})]
+          console.log("selectedPiece", data.selectedPiece)
+          const newPoint = PieceOps.addPoint({...args, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id})
+          // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
+          points = [...data.selectedPiece.points, newPoint]
+          // data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
+          // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
           data.selectedPiece.points = points
+          data.selectedPoint = data.selectedPiece.points.slice(-1)[0].id
+          console.log(points)
         }
         else {
           data.selectedPiece = null
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
-            // PieceOps.renderPiece({data, piece})
           })
         }
       } else {
         data.selectedPiece = null
         data.pieces.forEach(piece => {
           piece.points.forEach(point => point.active = false)
-          // PieceOps.renderPiece({data, piece})
         })
       }
     }
   }
   
   if (event.target.classList.contains('anchor')) {
-    let id = event.target.getAttribute('data-id')
+    let domPointId = event.target.getAttribute('data-id')
     let domPoint: Point = event.target.getAttribute('data-point')
     let pieceId: string = event.target.getAttribute('data-pieceId')
     
-    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
-    data.selectedPoint = id
-    console.info(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
+    // data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
+    data.selectedPoint = domPointId
+    console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
+    console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
+    console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
+    console.info(data.selectedPiece.points)
     
-    if (id == data.selectedPiece.points[0].id) {
+    if (domPointId == data.selectedPiece.points[0].id) {
       data.selectedPiece.closed = true
+      console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
     }
     
     draw.find('.activeLine').forEach(element => element.remove())
     
-    data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
+    data.selectedPiece.points.forEach(point => point.id == domPointId ? point.active = true : point.active = false)
   }
   
   return data
@@ -122,16 +131,25 @@ interface HandleMouseArgs {
 function handleMousedown (args:HandleMouseArgs) {
   let data = args.data
   let event = args.event
+  console.info(`Rhapsew [Info]: Mousedown`)
+  console.log(data?.selectedPiece?.points)
   
+  // !!!!!!!!!!!!!!!!!!
+
   if (event.target.classList.contains(`anchor`)) {
     let id = event.target.getAttribute('data-id')
     let domPoint:Point = JSON.parse(event.target.getAttribute('data-point'))
     let pieceId: string = event.target.getAttribute('data-pieceId')
     
     console.info(`Rhapsew [Info]: Point selected: ${id}`)
+    console.log("pieces", data.pieces)
+    console.log(data.selectedPiece)
     data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
+    console.log("selected piece", data.selectedPiece)
     data.selectedPoint = id
     data.moving = true
+    console.info(`Rhapsew [Info]: Piece selected: ${data.selectedPiece.id}`)
+    console.log(data.selectedPiece.points)
   }
   return data  
 }
@@ -165,7 +183,7 @@ function handleMove (args:HandleMoveArgs) {
   if (data.selectedPoint && data.moving) {
     let id = data.selectedPoint
     data.selectedPiece.points = data.selectedPiece.points.map(point => {
-      if (point.id == data.selectedPoint) {
+      if (point.id == id) {
         point.x = SVG(`svg`).point(event.clientX, event.clientY).x
         point.y = SVG(`svg`).point(event.clientX, event.clientY).y
       }

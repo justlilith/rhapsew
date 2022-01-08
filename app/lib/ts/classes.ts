@@ -4,11 +4,14 @@ import * as PieceOps from './helpers/pieceOps'
 
 class Piece {
   constructor(args:PieceArgs) {
-    this.id = nanoid()
-    this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0, pieceId: this.id})]
+    const id = nanoid()
+    this.id = id
+    this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0, pieceId: id})]
+    // this.points = [new Point({x:0, y:0, active: true, id, index: 0, pieceId: id})]
+    // this.points = []
     this.closed = false
   }
-  points: Array<Point>
+  points: Point[]
   name: string = "init"
   closed: boolean
   id: string
@@ -20,7 +23,7 @@ class Point {
     this.y = args.y
     this.type = args.type ?? "anchor"
     this.active = args.active ?? false
-    this.id = args.id ?? nanoid()
+    this.id = args.id ?? null
     this.index = args.index ?? null
     this.pieceId = args.pieceId
   }

@@ -23,7 +23,7 @@ tag app-canvas
 		
 	<self#canvas @click=(do (data = AppOps.handleClick {data, event: e}))
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
-	@mousedown=(do (data = AppOps.handleMousedown {data, event: e}))
+	@mousedown.self=(do (data = AppOps.handleMousedown {data, event: e}))
 	@mouseup=(do (data = AppOps.handleMouseup {data, event: e}))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))

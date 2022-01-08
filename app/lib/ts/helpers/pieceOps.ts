@@ -7,14 +7,30 @@ import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
 
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!
 function addPiece (args:PieceArgs):State {
-  let newPiece = new Piece({data: args.data, event: args.event})
-  args.data.pieces = args.data.pieces.concat([newPiece])
-  args.data.selectedPiece = newPiece
-  console.info(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
-  return args.data
+  let data = args.data
+  let event = args.event
+  
+  console.log('pieces', data.pieces)
+
+  let newPiece = new Piece({data, event})
+  data.pieces = [...data.pieces, newPiece]
+  console.log('pieces post concat', data.pieces)
+  // data.selectedPiece = newPiece
+  // data.selectedPiece = null
+
+
+  // data.selectedPiece = data.pieces.filter(piece => piece.id = newPiece.id)[0]
+  data.selectedPiece = data.pieces.slice(-1)[0]
+  data.selectedPoint = data.selectedPiece.points[0].id
+  console.info(`Rhapsew [Info]: New piece added: ${data.selectedPiece.id}`)
+  console.info("selected piece", data.selectedPiece)
+  console.log('pieces', data.pieces)
+  return data
 }
 
+// !!!!!!!!!!!!!!
 function addPoint (args:addPointArgs):Point {
   const data = args.data
   const pieceId = args.pieceId
@@ -22,10 +38,12 @@ function addPoint (args:addPointArgs):Point {
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
   const event = args.event
-  const piece = data.pieces.filter(piece => piece.id = pieceId)[0] 
+  const piece = data.pieces.filter(piece => piece.id = pieceId)[0]
+
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
   const point = new Point({...coords, active: true, id, index, pieceId})
+  
   if (args.event.altKey) {
     point.type = "control"
     console.log('alt')
@@ -35,17 +53,11 @@ function addPoint (args:addPointArgs):Point {
     point.x = piece.points[index - 1].x
     console.log('shift')
   }
+
+  console.info(`Rhapsew [Info]: New point: ${point.id}`)
   
   return point
 }
-
-/**
-* Needs heavy refactoring.
-* Each segment needs its own path.
-* What's a segment? [0] to [1], [1] to [2], [2] to [0], etc.
-* For each point, render a path? No.
-* Note in piece data whether it's cubic, smooth, or normal (lol)
-*/
 
 function renderPiece (args:RenderPieceArgs) {
   let data = args.data
@@ -57,29 +69,30 @@ function renderPiece (args:RenderPieceArgs) {
     let pathString = `M ${point.x} ${point.y}`
 
     const point0 = point
+    const pointPieceOrigin = piece.points[0]
     const point1 = piece.points[index + 1] ?? null
     const point2 = piece.points[index + 2] ?? null
     const point3 = piece.points[index + 3] ?? null
     const point4 = piece.points[index + 4] ?? null
     
     if (point.type == "anchor") {
-      if (point3 && point1?.type == 'control' && piece.points?.[index + 2]?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
+      if (point3 && point1?.type == 'control' && point2?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${point3.x} ${point3.y}`
         // C
-      } else if (point3 && point1?.type == 'control' && piece.points?.[index + 2]?.type == 'control' && piece.closed) {
-        pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${piece.points[0].x} ${piece.points[0].y}`
+      } else if (point3 && point1?.type == 'control' && point2?.type == 'control' && piece.closed) {
+        pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
         // C
       } else if (point2 && point1?.type == 'control' && (point2?.type == 'anchor' || !point3)) {
-        pathString += ` S ${point1.x} ${point1.y} ${piece.points[2].x} ${piece.points[2].y}`
+        pathString += ` S ${point1.x} ${point1.y} ${point2.x} ${point2.y}`
         // S
-      } else if (point1?.type == 'control' && !point2 && piece.closed) {
-        pathString += ` S ${point1.x} ${point1.y} ${piece.points[0].x} ${piece.points[0].y}`
+      } else if (!point2 && point1?.type == 'control' && piece.closed) {
+        pathString += ` S ${point1.x} ${point1.y} ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
         // S
-      } else if (point1?.type == "anchor") {
+      } else if (point1 && (point1?.type == "anchor" || !point2)) {
         pathString += ` L ${point1.x} ${point1.y}`
         // L
       } else if (!point1 && piece.closed) {
-        pathString += ` L ${piece.points[0].x} ${piece.points[0].y}`
+        pathString += ` L ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
         // L
       }
     }
@@ -122,7 +135,7 @@ function renderPiece (args:RenderPieceArgs) {
       .font({
         family: 'sans-serif'
         , size: 12
-        , anchor: "middle"
+        , anchor: "left"
       })
 
       draw.add(text)
@@ -175,8 +188,6 @@ function renderPiece (args:RenderPieceArgs) {
       })
     }
   })
-  
-  
 }
 
 function renderPoint (args:RenderPointArgs) {

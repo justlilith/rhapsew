@@ -9,7 +9,8 @@ tag context-menu
 	# 	console.log data
 
 	def addPiece(event)
-		data = PieceOps.addPiece {data\State, event}
+		data = PieceOps.addPiece {data, event}
+		console.log("imba data", data.pieces)
 		data = AppOps.toggleContextMenu {data, state: 'off'}
 	# def deletePiece
 
