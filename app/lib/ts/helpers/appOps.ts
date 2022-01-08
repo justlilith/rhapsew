@@ -7,6 +7,19 @@ const TOPBARHEIGHT = 30
 
 
 
+function clearScreen (args):State {
+  let data:State = args.data
+  
+  let draw = initSVGCanvas(data)
+  
+  data.selectedPiece = null
+  data.selectedPoint = null
+  data.pieces = []
+
+  draw.clear()
+  return data
+}
+
 function exportSvg (args) {
   const data = args.data
   let draw = initSVGCanvas(data)
@@ -200,7 +213,8 @@ function writeToStatus () {
 }
 
 export {
-  exportSvg
+    clearScreen
+  , exportSvg
   , handleClick
   , handleMousedown
   , handleMouseup

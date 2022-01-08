@@ -16,21 +16,24 @@ function addPiece (args:PieceArgs):State {
 }
 
 function addPoint (args:addPointArgs):Point {
+  const data = args.data
   const pieceId = args.pieceId
   const index = args.index
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
+  const event = args.event
+  const piece = data.pieces.filter(piece => piece.id = pieceId)[0] 
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
   const point = new Point({...coords, active: true, id, index, pieceId})
-  switch (args.event.altKey) {
-    case true:
+  if (args.event.altKey) {
     point.type = "control"
     console.log('alt')
-    break
-    case false:
-    break
-    default:
+  }
+  if (args.event.shiftKey) {
+    // point.type = "control"
+    point.x = piece.points[index - 1].x
+    console.log('shift')
   }
   
   return point
@@ -52,21 +55,33 @@ function renderPiece (args:RenderPieceArgs) {
   
   piece.points.forEach((point, index) => {
     let pathString = `M ${point.x} ${point.y}`
+
+    const point0 = point
+    const point1 = piece.points[index + 1] ?? null
+    const point2 = piece.points[index + 2] ?? null
+    const point3 = piece.points[index + 3] ?? null
+    const point4 = piece.points[index + 4] ?? null
     
     if (point.type == "anchor") {
-      if (piece.points[index + 3] && piece.points?.[index + 1]?.type == 'control' && piece.points?.[index + 2]?.type == 'control' && (piece.points?.[index + 3]?.type == 'anchor' || !piece.points?.[index + 4])) {
-        pathString += ` C ${piece.points[index + 1].x} ${piece.points[index + 1].y} ${piece.points[index + 2].x} ${piece.points[index + 2].y} ${piece.points[index + 3].x} ${piece.points[index + 3].y}`
+      if (point3 && point1?.type == 'control' && piece.points?.[index + 2]?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
+        pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${point3.x} ${point3.y}`
+        // C
+      } else if (point3 && point1?.type == 'control' && piece.points?.[index + 2]?.type == 'control' && piece.closed) {
+        pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${piece.points[0].x} ${piece.points[0].y}`
+        // C
+      } else if (point2 && point1?.type == 'control' && (point2?.type == 'anchor' || !point3)) {
+        pathString += ` S ${point1.x} ${point1.y} ${piece.points[2].x} ${piece.points[2].y}`
+        // S
+      } else if (point1?.type == 'control' && !point2 && piece.closed) {
+        pathString += ` S ${point1.x} ${point1.y} ${piece.points[0].x} ${piece.points[0].y}`
+        // S
+      } else if (point1?.type == "anchor") {
+        pathString += ` L ${point1.x} ${point1.y}`
+        // L
+      } else if (!point1 && piece.closed) {
+        pathString += ` L ${piece.points[0].x} ${piece.points[0].y}`
+        // L
       }
-      // C
-    } else if (piece.points[index + 2] && piece.points?.[index + 1]?.type == 'control' && (piece.points?.[index + 2]?.type == 'anchor' || !piece.points?.[index + 3])) {
-      pathString += ` S ${piece.points[index + 1].x} ${piece.points[index + 1].y} ${piece.points[2].x} ${piece.points[2].y}`
-      // S
-    } else if (piece.points[index + 1] && (piece.points?.[index + 1]?.type == 'anchor' || !piece.points?.[index + 2])) {
-      pathString += ` L ${piece.points[index + 1].x} ${piece.points[index + 1].y}`
-      // L
-    } else if (piece.points?.[index + 1]?.type == 'control' && !piece.points[index + 2]) {
-        pathString += ` S ${piece.points[index + 1].x} ${piece.points[index + 1].y} ${piece.points[0].x} ${piece.points[0].y}`
-      // M
     }
     
     const segment = SVG()
@@ -98,6 +113,23 @@ function renderPiece (args:RenderPieceArgs) {
       //     }))
       //   }
     })
+    .on('mouseover', (event:MouseEvent) => {
+      let length = segment.length().toString()
+      let text = SVG()
+      .text(length)
+      .addClass('hover-measure')
+      .attr({x:event.clientX, y: event.clientY})
+      .font({
+        family: 'sans-serif'
+        , size: 12
+        , anchor: "middle"
+      })
+
+      draw.add(text)
+    })
+    .on('mouseout', (event) => {
+      draw.find('.hover-measure').forEach(element => element.remove())
+    })
     
     // draw.add(segment)
     // draw.add(segmentWrangler)
@@ -105,7 +137,8 @@ function renderPiece (args:RenderPieceArgs) {
     if (point.type == 'control') { // C, S
       draw.find(`[data-source-point-id="${point.id}"]`) ? draw.find(`[data-source-point-id="${point.id}"]`).forEach(line => line.remove()) : null
       let controlPath = []
-      if (piece.points[index - 1].type == "control") { // C
+
+      if (piece.points[index - 1].type == "control" && piece.points[index + 1]) { // C
         controlPath = piece.points[index + 1] ? [point.x, point.y, piece.points[index + 1].x, piece.points[index + 1].y] : controlPath
       } else { // S
         controlPath = [point.x, point.y, piece.points[index - 1].x, piece.points[index - 1].y]
@@ -113,7 +146,7 @@ function renderPiece (args:RenderPieceArgs) {
       
       let controlLine = SVG()
       .line(controlPath)
-      .stroke('blue')
+      .stroke('hsla(240, 100%, 50%, 0.5)')
       .addClass('control-line')
       .data("source-point-id", point.id)
       
