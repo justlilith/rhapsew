@@ -1,31 +1,42 @@
 import { SVG } from '@svgdotjs/svg.js'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 // import type { State } from 'app/lib/global'
+import type { Element } from '@svgdotjs/svg.js'
 
 const TOPBARHEIGHT = 30
 
-function shallowCopy (arg) {
-  return JSON.parse(JSON.stringify(arg))
+
+
+function exportSvg (args) {
+  const data = args.data
+  let draw = initSVGCanvas(data)
+  let output = draw.svg((node:Element) => {
+    if (node.hasClass('piece-wrangler') || node.hasClass('anchor')) {
+      return false
+    }
+    if (node.hasClass('piece')) {
+      node.attr({stroke: "black"})
+    }
+  })
+  let svgPacket = {name: ""}
+  // notify('downloading chat! c:', 1000)
+  svgPacket.name = "Rhapsew — Document"
+  const date = new Date()
+  const filenameFinal = `${svgPacket.name} (from ${date.toDateString()}).svg`
+  const file = new File([output], filenameFinal, {
+    type: 'text/svg'
+  })
+  const download = document.createElement('a')
+  download.setAttribute('id',file.name)
+  download.setAttribute('download',filenameFinal)
+  const link = URL.createObjectURL(file)
+  download.setAttribute('href',link)
+  document.body.append(download)
+  download.click()
+  download.onload = () => {URL.revokeObjectURL(link)}
+  document.body.removeChild(download)
 }
 
-function toggleContextMenu (args) {
-  switch (args.state) {
-    case 'on':
-    args.data.menu = true
-    args.data.menuX = args.x ?? 0
-    args.data.menuY = args.y ?? 0
-    break
-    case 'off':
-    default:
-    args.data.menu = false
-  }
-  return args.data
-}
-
-interface HandleClickArgs {
-  event: MouseEvent
-  data: State
-}
 function handleClick (args:HandleClickArgs) {
   let data= args.data
   let event= args.event
@@ -33,13 +44,12 @@ function handleClick (args:HandleClickArgs) {
   
   let draw = initSVGCanvas(data)
   
-  console.log(event)
+  // console.log(event)
   
   if (event.target.classList.contains('svg')) {
     switch (event.button) {
       case 2: // right-click
       data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
-      console.log('correct')
       draw.find('.activeLine').forEach(element => element.remove())
       try {
         // data.pieces.forEach(piece => {
@@ -59,21 +69,21 @@ function handleClick (args:HandleClickArgs) {
       
       if (data.selectedPiece) {
         if (!data.selectedPiece.closed) {
-          points = [...data.selectedPiece.points, PieceOps.addPoint({...args, index: data.selectedPiece.points.length})]
+          points = [...data.selectedPiece.points, PieceOps.addPoint({...args, index: data.selectedPiece.points.length, pieceId:data.selectedPiece.id})]
           data.selectedPiece.points = points
         }
         else {
           data.selectedPiece = null
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
-            PieceOps.renderPiece({data, piece})
+            // PieceOps.renderPiece({data, piece})
           })
         }
       } else {
         data.selectedPiece = null
         data.pieces.forEach(piece => {
           piece.points.forEach(point => point.active = false)
-          PieceOps.renderPiece({data, piece})
+          // PieceOps.renderPiece({data, piece})
         })
       }
     }
@@ -81,24 +91,20 @@ function handleClick (args:HandleClickArgs) {
   
   if (event.target.classList.contains('anchor')) {
     let id = event.target.getAttribute('data-id')
-    let domPoint:Point = event.target.getAttribute('data-point')
-
-    console.log(domPoint)
-    data.selectedPiece = data.pieces.filter(piece => piece.points.filter(point => JSON.stringify(point) == JSON.stringify(domPoint)))[0]
-    console.log(data.selectedPiece)
+    let domPoint: Point = event.target.getAttribute('data-point')
+    let pieceId: string = event.target.getAttribute('data-pieceId')
+    
+    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
     data.selectedPoint = id
-    console.log(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
+    console.info(`Rhapsew [Info]: Selected Point: ${data.selectedPoint}`)
     
     if (id == data.selectedPiece.points[0].id) {
       data.selectedPiece.closed = true
     }
-
+    
     draw.find('.activeLine').forEach(element => element.remove())
     
     data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
-    
-    PieceOps.renderPiece({data, piece: data.selectedPiece})
-    console.log(data.selectedPiece)
   }
   
   return data
@@ -114,12 +120,12 @@ function handleMousedown (args:HandleMouseArgs) {
   let event = args.event
   
   if (event.target.classList.contains(`anchor`)) {
-    console.log(data)
     let id = event.target.getAttribute('data-id')
-    let domPoint:Point = event.target.getAttribute('data-point')
+    let domPoint:Point = JSON.parse(event.target.getAttribute('data-point'))
+    let pieceId: string = event.target.getAttribute('data-pieceId')
     
-    console.log(`Rhapsew [Info]: Point selected: ${id}`)
-    data.selectedPiece = data.pieces.filter(piece => piece.points.filter(point => JSON.stringify(point) == JSON.stringify(domPoint)))[0]
+    console.info(`Rhapsew [Info]: Point selected: ${id}`)
+    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
     data.selectedPoint = id
     data.moving = true
   }
@@ -180,18 +186,37 @@ function initSVGCanvas (args:State) {
   return draw
 }
 
+function shallowCopy (arg) {
+  return JSON.parse(JSON.stringify(arg))
+}
+
+function toggleContextMenu (args) {
+  switch (args.state) {
+    case 'on':
+    args.data.menu = true
+    args.data.menuX = args.x ?? 0
+    args.data.menuY = args.y ?? 0
+    break
+    case 'off':
+    default:
+    args.data.menu = false
+  }
+  return args.data
+}
+
 function writeToStatus () {
   
 }
 
 export {
-  shallowCopy
+  exportSvg
   , handleClick
   , handleMousedown
   , handleMouseup
   , handleMove
   , init
   , initSVGCanvas
+  , shallowCopy
   , toggleContextMenu
   , writeToStatus
 }

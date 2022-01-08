@@ -10,11 +10,10 @@ import context-menu from '$lib/components/context-menu'
 tag app-canvas
 	prop data
 	def mount
-		console.log "awakened"
-		console.log data.parent
+		console.info "Rhapsew [Info]: App started! 🤍"
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,100) do # renderLoop, 60-ish fps
+		setInterval(&,20) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}

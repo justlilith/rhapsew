@@ -8,7 +8,7 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 
 function deleteKey (args: HandleKeyboardArgs):State {
   let data = args.data
-  console.log('Rhapsew [Info]: Key pressed: Delete')
+  console.info('Rhapsew [Info]: Key pressed: Delete')
   args.data.pieces = args.data.pieces.map(piece => {
     const newPoints = piece.points.filter(point => point.id != data.selectedPoint)
     PieceOps.renderPiece({data, piece: {...piece, points: newPoints}})
@@ -19,7 +19,7 @@ function deleteKey (args: HandleKeyboardArgs):State {
 }
 
 function escape (args: HandleKeyboardArgs):State {
-  console.log('Rhapsew [Info]: Key pressed: Escape')
+  console.info('Rhapsew [Info]: Key pressed: Escape')
   args.data.selectedPoint = null
   args.data.pieces.forEach(piece => {
     piece.points.forEach(point => {

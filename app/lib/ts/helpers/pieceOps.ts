@@ -11,22 +11,18 @@ function addPiece (args:PieceArgs):State {
   let newPiece = new Piece({data: args.data, event: args.event})
   args.data.pieces = args.data.pieces.concat(newPiece)
   args.data.selectedPiece = newPiece
-  console.log(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
+  console.info(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
   return args.data
 }
 
 function addPoint (args:addPointArgs):Point {
-  // console.log(args.event)
+  const pieceId = args.pieceId
+  const index = args.index
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
-  // draw.add(SVG().circle().attr({fill: 'black', cx: coords.x, cy: coords.y}).size(10).addClass('anchor').data('id', id))
-  
-  
-  // if (args.activePoint) {
-  //   draw.add(SVG().path())
-  // }
-  const point = new Point({...coords, active: true, id, index: args.index})
+
+  const point = new Point({...coords, active: true, id, index, pieceId})
   switch (args.event.altKey) {
     case true:
     point.type = "handle"
@@ -36,15 +32,12 @@ function addPoint (args:addPointArgs):Point {
     default:
   }
   
-  // renderPoint({id, data: args.data, point})
-  // const point = new Point({...coords, type:"handle"})
   return point
 }
 
 function renderPiece (args:RenderPieceArgs) {
   let data = args.data
   let piece = args.piece
-  // console.log(args.piece)
   const draw = AppOps.initSVGCanvas(data)
   
   let renderedPath = `M ${piece.points[0].x} ${piece.points[0].y}`
@@ -55,15 +48,17 @@ function renderPiece (args:RenderPieceArgs) {
         case "handle":
         if (piece.points[index + 1]) {
           renderedPath += ` S ${point.x} ${point.y} ${piece.points[index +1].x} ${piece.points[index +1].y}`
+        } else if (piece.closed) {
+          renderedPath += ` S ${point.x} ${point.y} ${piece.points[0].x} ${piece.points[0].y}`
         } else {
           renderedPath += ` L ${point.x} ${point.y}`
         }
-        if (piece.points[index - 1]) {
-          draw.find(`[data-sourcePointId="${point.id}"]`) ? draw.find(`[data-sourcePointId="${point.id}"]`).forEach(line => line.remove()) : null
+        // if (piece.points[index - 1]) {
+          draw.find(`[data-source-point-id="${point.id}"]`) ? draw.find(`[data-source-point-id="${point.id}"]`).forEach(line => line.remove()) : null
           let controlPath = [point.x, point.y, piece.points[index - 1].x, piece.points[index - 1].y]
-          let controlLine = SVG().line(controlPath).stroke('blue').addClass('control-line').data("sourcePointId", point.id)
+          let controlLine = SVG().line(controlPath).stroke('blue').addClass('control-line').data("source-point-id", point.id)
           draw.add(controlLine)
-        }
+        // }
         break
         default:
         renderedPath += ` L ${point.x} ${point.y}`
@@ -88,67 +83,70 @@ function renderPiece (args:RenderPieceArgs) {
   .data("id", piece.id)
   .attr({x: piece.points[0].x, y: piece.points[0].y, fill:"none", stroke:"cyan"})
   .stroke({color:"hsla(0, 0%, 0%, 0.1)", width:10})
-  .addClass('piece')
+  .addClass('piece-wrangler')
   .click((event) => {
-    console.log('path clicked')
-    console.log(data)
-    console.log(piece)
+    console.info('Rhapsew [Infp]: Path clicked')
     if (data.selectedPiece) {
-      data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data, index: data.selectedPiece.points.length}))
+      data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id}))
     }
   })
   
   const domPiece = draw.find(`[data-id = "${piece.id}"`)?.[0]
   if (domPiece) {
     if (!_.isEqual(AppOps.shallowCopy(domPiece.data("piece")), AppOps.shallowCopy(piece))){
-      console.log('Rhapsew [Info]: Rerendering piece')
+      console.info(`Rhapsew [Info]: Rerendering piece: ${piece.id}`)
       draw.find('.piece').forEach(element => element.remove())
+      draw.find('.piece-wrangler').forEach(element => element.remove())
       draw.add(renderedPiece)
       draw.add(renderedPieceThickStroke)
       piece.points.forEach(point => {
-        renderPoint({id: point.id, data, point})
+        renderPoint({id: point.id, data, point, piece})
       })
       // }
     }
   } else {
-    console.log('not found')
     draw.add(renderedPiece)
     draw.add(renderedPieceThickStroke)
     piece.points.forEach(point => {
-      renderPoint({id: point.id, data, point})
+      renderPoint({id: point.id, data, point, piece})
     })
   }
 }
 
 function renderPoint (args:RenderPointArgs) {
-  const draw = AppOps.initSVGCanvas(args.data)
+  let data = args.data
+  let id = args.id
+  let point = args.point
+  let pieceId = args.piece.id
+  const draw = AppOps.initSVGCanvas(data)
   
-  const domPoint = draw.find(`[data-id = "${args.point.id}"]`)[0]
+  const domPoint = draw.find(`[data-id = "${point.id}"]`)[0]
   
-  console.log(`Rhapsew [Info]: Purging DOM point: ${args.id}`)
-  draw.find(`[data-id = "${args.id}"]`).forEach(element => element.remove())
+  console.info(`Rhapsew [Info]: Purging DOM point: ${id}`)
+  draw.find(`[data-id = "${id}"]`).forEach(element => element.remove())
   // draw.find(`.selection-box`).forEach(element => element.remove())
   
   const renderedPoint = SVG()
   .circle()
-  .attr({fill: 'black', cx: args.point.x, cy: args.point.y})
+  .attr({fill: 'black', cx: point.x, cy: point.y})
   .stroke({color:"hsla(0,0%,0%,0)", width:15})
   .size(10)
   .addClass('anchor')
-  .data('id', args.id)
-  .data('point', args.point)
+  .data('id', id)
+  .data('point', point)
+  .data('pieceId', pieceId)
   
   draw.add(renderedPoint)
   const domSelectionBox = draw.find(`.selection-box`)[0]
   
   const selectionBox = SVG()
   .rect()
-  .attr({fill:"none", width: 20, height: 20, x: args.point.x -10, y: args.point.y -10})
+  .attr({fill:"none", width: 20, height: 20, x: point.x -10, y: point.y -10})
   .stroke({color:"hsla(0,0%,0%,0.5)", width:2})
   .addClass('selection-box')
-  .data('id', args.id)
+  .data('id', id)
   
-  switch (args.data.selectedPoint == args.id) {
+  switch (data.selectedPoint == id) {
     case true:
     if (domSelectionBox) {
       domSelectionBox.remove()
@@ -156,9 +154,6 @@ function renderPoint (args:RenderPointArgs) {
     draw.add(selectionBox)
     break
     default:
-    console.log(args.data.selectedPoint)
-    console.log(args.id)
-    // draw.add(selectionBox)
   }
 }
 

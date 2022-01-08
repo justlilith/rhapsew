@@ -5,7 +5,7 @@ import * as PieceOps from './helpers/pieceOps'
 class Piece {
   constructor(args:PieceArgs) {
     this.id = nanoid()
-    this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0})]
+    this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0, pieceId: this.id})]
     this.closed = false
   }
   points: Array<Point>
@@ -22,9 +22,11 @@ class Point {
     this.active = args.active ?? false
     this.id = args.id ?? nanoid()
     this.index = args.index ?? null
+    this.pieceId = args.pieceId
   }
   x: number
   y: number
+  pieceId: string
   type: string
   active: boolean
   id: string

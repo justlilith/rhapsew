@@ -43,6 +43,12 @@ interface addPointArgs {
   event: MouseEvent
   data: State
   index: number
+  pieceId: string
+}
+
+interface HandleClickArgs {
+  event: MouseEvent
+  data: State
 }
 
 interface HandleKeyboardArgs {
@@ -73,4 +79,5 @@ interface RenderPointArgs {
   id: string
   data: State
   point: Point
+  piece: Piece
 }

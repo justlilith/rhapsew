@@ -4,9 +4,9 @@ import * as AppOps from '$lib/ts/helpers/appOps'
 
 tag context-menu
 	prop data
-	def mount
-		console.log "menu mounted"
-		console.log data
+	# def mount
+	# 	console.log "menu mounted"
+	# 	console.log data
 
 	def addPiece(event)
 		data = PieceOps.addPiece {data\State, event}
