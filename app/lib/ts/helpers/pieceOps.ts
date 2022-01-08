@@ -9,7 +9,7 @@ const TOPBARHEIGHT = 30
 
 function addPiece (args:PieceArgs):State {
   let newPiece = new Piece({data: args.data, event: args.event})
-  // args.data.pieces = args.data.pieces.concat(newPiece)
+  args.data.pieces = args.data.pieces.concat(newPiece)
   args.data.selectedPiece = newPiece
   console.info(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
   return args.data
@@ -34,6 +34,14 @@ function addPoint (args:addPointArgs):Point {
   
   return point
 }
+
+/**
+ * Needs heavy refactoring.
+ * Each segment needs its own path.
+ * What's a segment? [0] to [1], [1] to [2], [2] to [0], etc.
+ * For each point, render a path? No.
+ * Note in piece data whether it's cubic, smooth, or normal (lol)
+ */
 
 function renderPiece (args:RenderPieceArgs) {
   let data = args.data
@@ -136,7 +144,7 @@ function renderPoint (args:RenderPointArgs) {
   .circle()
   .attr({fill: 'black', cx: point.x, cy: point.y})
   .stroke({color:"hsla(0,0%,0%,0)", width:15})
-  .size(10)
+  .size(7)
   .addClass('anchor')
   .data('id', id)
   .data('point', point)
