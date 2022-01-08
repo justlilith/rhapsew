@@ -22,7 +22,7 @@ let state\State =
 tag app
 	<self.app.{state.currentTheme}>
 		<header>
-			<app-top-bar>
+			<app-top-bar bind=state>
 		<section.content>
 			<app-canvas bind=state>
 		<footer>

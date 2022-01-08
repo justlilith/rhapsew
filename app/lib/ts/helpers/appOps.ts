@@ -51,15 +51,6 @@ function handleClick (args:HandleClickArgs) {
       case 2: // right-click
       data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
       draw.find('.activeLine').forEach(element => element.remove())
-      try {
-        // data.pieces.forEach(piece => {
-        //   piece.points.forEach(point => {
-        //     point.active = false
-        //   })
-        // })
-      } catch (e) {
-        console.warn(e)
-      }
       break
       case 0:
       default: // left-click

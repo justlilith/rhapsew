@@ -9,7 +9,7 @@ const TOPBARHEIGHT = 30
 
 function addPiece (args:PieceArgs):State {
   let newPiece = new Piece({data: args.data, event: args.event})
-  args.data.pieces = args.data.pieces.concat(newPiece)
+  // args.data.pieces = args.data.pieces.concat(newPiece)
   args.data.selectedPiece = newPiece
   console.info(`Rhapsew [Info]: New piece added: ${newPiece.id}`)
   return args.data
@@ -68,7 +68,7 @@ function renderPiece (args:RenderPieceArgs) {
   if (piece.closed) {
     renderedPath += ` z`
   }
-  // draw.find('.piece').forEach(element => element.remove())
+
   const renderedPiece = SVG()
   .path(renderedPath)
   .data("piece", piece)
@@ -81,13 +81,19 @@ function renderPiece (args:RenderPieceArgs) {
   .path(renderedPath)
   .data("piece", piece)
   .data("id", piece.id)
-  .attr({x: piece.points[0].x, y: piece.points[0].y, fill:"none", stroke:"cyan"})
+  .attr({x: piece.points[0].x, y: piece.points[0].y, fill:"none"})
   .stroke({color:"hsla(0, 0%, 0%, 0.1)", width:10})
   .addClass('piece-wrangler')
   .click((event) => {
-    console.info('Rhapsew [Infp]: Path clicked')
+    console.info('Rhapsew [Info]: Path clicked')
     if (data.selectedPiece) {
-      data.selectedPiece.points = data.selectedPiece.points.concat(addPoint({event, data, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id}))
+      data.selectedPiece.points = data
+      .selectedPiece
+      .points
+      .concat(
+        addPoint({
+          event, data, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id
+        }))
     }
   })
   
