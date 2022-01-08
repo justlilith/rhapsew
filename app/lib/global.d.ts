@@ -23,7 +23,7 @@ interface Piece {
 interface Point {
   x: number
   y: number
-  type: string
+  type: "anchor" | "control"
   active: boolean
   id: string
   index: number

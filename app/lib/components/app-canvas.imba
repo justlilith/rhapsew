@@ -13,7 +13,7 @@ tag app-canvas
 		console.info "Rhapsew [Info]: App started! 🤍"
 		AppOps.init data
 		AppOps.initSVGCanvas data
-		setInterval(&,20) do # renderLoop, 60-ish fps
+		setInterval(&,100) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}

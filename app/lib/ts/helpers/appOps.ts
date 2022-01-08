@@ -11,7 +11,7 @@ function exportSvg (args) {
   const data = args.data
   let draw = initSVGCanvas(data)
   let output = draw.svg((node:Element) => {
-    if (node.hasClass('piece-wrangler') || node.hasClass('anchor')) {
+    if (node.hasClass('segment-wrangler') || node.hasClass('anchor')) {
       return false
     }
     if (node.hasClass('piece')) {

@@ -18,7 +18,7 @@ class Point {
   constructor(args) {
     this.x = args.x
     this.y = args.y
-    this.type = args.type ?? "normal"
+    this.type = args.type ?? "anchor"
     this.active = args.active ?? false
     this.id = args.id ?? nanoid()
     this.index = args.index ?? null
@@ -27,7 +27,7 @@ class Point {
   x: number
   y: number
   pieceId: string
-  type: string
+  type: "anchor" | "control"
   active: boolean
   id: string
   index: number
