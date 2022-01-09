@@ -7,33 +7,36 @@ import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!
 function addPiece (args:PieceArgs):State {
-  let data = args.data
+  let data:State = {...args.data}
   let event = args.event
   
   console.log('adding a new piece')
   console.log('current pieces', data.pieces)
   
-  let newPiece = new Piece({data, event}) // this line right here, officer
+  // let newPiece = new Piece({data, event}) // this line right here, officer
+  let newPiece:Piece = {points: [], name: "test", closed: false, id: nanoid()} // wait nvm
   console.log('pieces post new piece', data.pieces)
-  data.pieces = data.pieces.concat(newPiece)
+  data.pieces = data.pieces.concat(newPiece) // <- This works fine
   console.log('pieces post concat', data.pieces)
-  newPiece.points[0] = addPoint({data: args.data, event: args.event, index: 0, pieceId: newPiece.id}) // trying this out
+  newPiece.points[0] = addPoint({data, event, index: 0, pieceId: newPiece.id}) // trying this out
   // data.selectedPiece = newPiece
   // data.selectedPiece = null
   
   
-  // data.selectedPiece = data.pieces.filter(piece => piece.id = newPiece.id)[0]
-  data.selectedPiece = data.pieces.slice(-1)[0]
+  data.selectedPiece = data.pieces.filter(piece => piece.id == newPiece.id)[0]
+  // data.selectedPiece = data.pieces.slice(-1)[0]
   data.selectedPoint = data.selectedPiece.points[0].id
   console.info(`Rhapsew [Info]: New piece added: ${data.selectedPiece.id}`)
   console.info("selected piece", data.selectedPiece)
   console.log('pieces', data.pieces)
+  for (let piece of data.pieces) {
+    console.log('piece', piece)
+  }
+
   return data
 }
 
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function addPoint (args:addPointArgs):Point {
   const data = args.data
   const pieceId = args.pieceId
@@ -41,7 +44,7 @@ function addPoint (args:addPointArgs):Point {
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
   const event = args.event
-  const piece = data.pieces.filter(piece => piece.id = pieceId)[0]
+  const piece = data.pieces.filter(piece => piece.id == pieceId)[0]
   
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   

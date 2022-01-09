@@ -73,8 +73,8 @@ function handleClick (args:HandleClickArgs):State {
       data.selectedPoint = null
       
       if (data.selectedPiece) {
+        console.log("selected piece", data.selectedPiece)
         if (!data.selectedPiece.closed) {
-          console.log("selectedPiece", data.selectedPiece)
           const newPoint = PieceOps.addPoint({...args, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id})
           // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
           points = [...data.selectedPiece.points, newPoint]
@@ -136,7 +136,6 @@ function handleMousedown (args:HandleMouseArgs):State {
   console.log(data?.selectedPiece?.points)
   console.log(event)
   
-  // !!!!!!!!!!!!!!!!!!
 
   if (event.target.classList.contains(`anchor`)) {
     let id = event.target.getAttribute('data-id')
