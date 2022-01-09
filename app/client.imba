@@ -7,7 +7,7 @@ let state\State =
 	{
 		currentTheme: 'dark'
 		units: 'imperial'
-		scale: 1.0
+		zoom: 1
 		pieces: []
 		status: "Idle"
 		parent: '#canvas'

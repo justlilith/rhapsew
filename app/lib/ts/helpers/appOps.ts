@@ -2,6 +2,7 @@ import { SVG } from '@svgdotjs/svg.js'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 // import type { State } from 'app/lib/global'
 import type { Element } from '@svgdotjs/svg.js'
+import '@svgdotjs/svg.panzoom.js'
 
 const TOPBARHEIGHT = 30
 
@@ -60,6 +61,48 @@ function handleClick (args:HandleClickArgs):State {
   console.log(event)
   console.log("data!!", data)
   
+  return data
+}
+
+interface HandleMouseArgs {
+  data: State
+  event: MouseEvent
+}
+
+function handleMousedown (args:HandleMouseArgs):State {
+  let data = args.data
+  let event = args.event
+  let draw = initSVGCanvas(data)
+
+  console.info(`Rhapsew [Info]: Mousedown`)
+  console.log(data?.selectedPiece?.points)
+  console.log(event)
+  
+
+  if (event.target.classList.contains(`anchor`)) {
+    let id = event.target.getAttribute('data-id')
+    let domPoint:Point = JSON.parse(event.target.getAttribute('data-point'))
+    let pieceId: string = event.target.getAttribute('data-pieceId')
+    
+    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
+    data.selectedPoint = id
+    data.moving = true
+
+    console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
+    console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
+    console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
+    
+    if (id == data.selectedPiece.points[0].id) {
+      data.selectedPiece.closed = true
+      console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
+    }
+
+    draw.find('.activeLine').forEach(element => element.remove())
+    data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
+  }
+
+
+
   if (event.target.classList.contains('svg')) {
     switch (event.button) {
       case 2: // right-click
@@ -98,60 +141,7 @@ function handleClick (args:HandleClickArgs):State {
       }
     }
   }
-  
-  if (event.target.classList.contains('anchor')) {
-    let domPointId = event.target.getAttribute('data-id')
-    let domPoint: Point = event.target.getAttribute('data-point')
-    let pieceId: string = event.target.getAttribute('data-pieceId')
-    
-    // data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
-    data.selectedPoint = domPointId
-    console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
-    console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
-    console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
-    console.info(data.selectedPiece.points)
-    
-    if (domPointId == data.selectedPiece.points[0].id) {
-      data.selectedPiece.closed = true
-      console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
-    }
-    
-    draw.find('.activeLine').forEach(element => element.remove())
-    
-    data.selectedPiece.points.forEach(point => point.id == domPointId ? point.active = true : point.active = false)
-  }
-  
-  return data
-}
 
-interface HandleMouseArgs {
-  data: State
-  event: MouseEvent
-}
-
-function handleMousedown (args:HandleMouseArgs):State {
-  let data = args.data
-  let event = args.event
-  console.info(`Rhapsew [Info]: Mousedown`)
-  console.log(data?.selectedPiece?.points)
-  console.log(event)
-  
-
-  if (event.target.classList.contains(`anchor`)) {
-    let id = event.target.getAttribute('data-id')
-    let domPoint:Point = JSON.parse(event.target.getAttribute('data-point'))
-    let pieceId: string = event.target.getAttribute('data-pieceId')
-    
-    console.info(`Rhapsew [Info]: Point selected: ${id}`)
-    console.log("pieces", data.pieces)
-    console.log("selected piece pre filter", data.selectedPiece)
-    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
-    console.log("selected piece", data.selectedPiece)
-    data.selectedPoint = id
-    data.moving = true
-    console.info(`Rhapsew [Info]: Piece selected: ${data.selectedPiece.id}`)
-    console.log(data.selectedPiece.points)
-  }
   return data  
 }
 
@@ -164,7 +154,7 @@ function handleMouseup (args:HandleMouseArgs):State {
 }
 
 
-function handleMove (args:HandleMoveArgs) {
+function handleMousemove (args:HandleMoveArgs) {
   let data = args.data
   let event = args.event
   
@@ -192,6 +182,37 @@ function handleMove (args:HandleMoveArgs) {
       return point
     })
   }
+
+  if (event.altKey && data.selectedPoint) {
+    // data.selectedPiece.points
+    /** How do you wanna do this?
+     * 
+     * assume no intermediate control points
+     * assume M 0 0
+     * click + alt -> M 0 0 S 100 100 0 100
+     * 2 points to 3 points
+     * [0, 1] -> [0, new, 1]
+     * segment points = [points[0], new, points[1]]
+     * 
+     * if intermediate control points
+     * click alt -> 3 points to 4 points
+     * [0, 1, 2] -> [0, 1, new, 2]
+     * It's always the second to last of an array...
+     * 
+     * how do we get the points of a segment??
+     * what about the first point?
+     */
+    let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint)[0]
+    let pointIndex = data.selectedPiece.points.indexOf(point) // returns -1 if not present!!
+
+    if (!data.selectedPiece.points[pointIndex - 2]) {
+      
+    } else if (!data.selectedPiece.points[pointIndex - 1]) {
+      
+    }
+
+  }
+
   return data
 }
 
@@ -202,13 +223,25 @@ function init (data) {
   })
 }
 
-function initSVGCanvas (args:State) {
+function initSVGCanvas (data:State) {
   let draw = SVG(`svg`)
   if (!draw) {
     draw = SVG()
-    .addTo(args.parent)
+    .addTo(data.parent)
     .addClass(`svg`)
     .addClass('rhapsew-element')
+    .viewbox(0,0,1000,100)
+    .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
+    .zoom(1)
+
+    draw.on('zoom', (event) => {
+      // console.log(event)
+      // data.zoom = event.detail.level
+      // draw.fire('rhapsewZoom', event)
+      window.dispatchEvent(new CustomEvent('rhapsewZoom', event))
+
+    })
+    // window.addEventListener('rhapsewZoom', e => console.log("whoa", e))
 
   }
   return draw
@@ -242,7 +275,7 @@ export {
   , handleClick
   , handleMousedown
   , handleMouseup
-  , handleMove
+  , handleMousemove
   , init
   , initSVGCanvas
   , shallowCopy

@@ -20,15 +20,18 @@ tag context-menu
 	<self.context-menu>
 		if data
 			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
-				<span @click=(addPiece e)> "New Piece"
+				<div.menu-item>
+					<span.material-icons-outlined> "checkroom"
+					<span @click=(addPiece e)> "New Piece"
 			
 		# <span @click=(do PieceOps.removePiece)> "Delete Piece"
 
 		# CSS
 
-css .menu c:white bg:black pos:fixed d:flex fld:column p:0.5em fs:1em min-height:10px
-	span d:block p:.5em bdb:thin solid gray6 cursor:pointer
-	span@hover c:cyan4
-	span@last bdb:none
+css .menu c:gray4 bg:black pos:fixed d:flex fld:column p:0.5em fs:1em min-height:10px
+	.menu-item d:flex fld:row ai:center p:.5em bdb:thin solid gray6 cursor:pointer
+	.menu-item@hover c:white
+	.menu-item@last bdb:none
+	.material-icons-outlined pr:.5em fs:.875em
 
 export default <context-menu>

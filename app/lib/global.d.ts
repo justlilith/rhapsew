@@ -1,7 +1,7 @@
 interface State {
   currentTheme: string
   units: string
-  scale: number
+  zoom: number
   pieces: Piece[]
   status: string
   parent: string

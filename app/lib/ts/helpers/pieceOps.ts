@@ -50,10 +50,10 @@ function addPoint (args:addPointArgs):Point {
   
   const point = new Point({...coords, active: true, id, index, pieceId}) // <- ????
   
-  if (args.event.altKey) {
-    point.type = "control"
-    console.log('alt')
-  }
+  // if (args.event.altKey) {
+  //   point.type = "control"
+  //   console.log('alt')
+  // }
   if (args.event.shiftKey) {
     // point.type = "control"
     point.x = piece.points[index - 1].x
@@ -68,6 +68,7 @@ function addPoint (args:addPointArgs):Point {
 function renderPiece (args:RenderPieceArgs):void {
   let data = args.data
   let piece = args.piece
+  
   const draw = AppOps.initSVGCanvas(data)
   
   
@@ -135,10 +136,12 @@ function renderPiece (args:RenderPieceArgs):void {
       //   }
     })
     .on('mouseover', (event:MouseEvent) => {
-      let length = segment.length().toString()
+      let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
+      let length = segment.length().toPrecision(5).toString()
+
       let text = SVG()
       .text(length)
-      .attr({x:event.clientX, y: event.clientY})
+      .attr({x: mousePoint.x + 20, y: mousePoint.y + 25})
       .font({
         family: 'sans-serif'
         , size: 12

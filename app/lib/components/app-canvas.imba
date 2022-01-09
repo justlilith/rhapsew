@@ -3,20 +3,30 @@ import * as AppOps from '$lib/ts/helpers/appOps'
 import * as KeyboardOps from '$lib/ts/helpers/keyboardOps'
 import context-menu from '$lib/components/context-menu'
 
+
+# <global @rhapsewZoom=(do (handleZoom e))>
+
 tag app-canvas
-	prop data
+	prop data\State
+
 	def mount
 		console.info "Rhapsew [Info]: App started! 🤍"
-		# AppOps.init data
 		AppOps.initSVGCanvas data
+		window.addEventListener('rhapsewZoom', &) do(e)
+			handleZoom e
 		setInterval(&,100) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}
-					# piece.points.forEach do(point)
-					# 	PieceOps.renderPoint {data, id: point.id, point}
 
+	def handleZoom(event)
+		# console.log event
+		# console.log data.zoom
+		data.zoom = event.detail.level
+		imba.commit!
+	
 	def handleMousedown(e\MouseEvent)
+		# emit "rhapsewZoom"
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
 			data = AppOps.handleMousedown {data, event: e}
@@ -33,9 +43,10 @@ tag app-canvas
 
 	<self#canvas
 	@click=(do (handleClick e))
+	@rhapsewZoom=(do (handleZoom e))
 	@contextmenu.prevent=(do (handleClick e))
-	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
-	@mousedown=(do (handleMousedown e)) # how to fix this . . .
+	@mousemove=(do (data = AppOps.handleMousemove {data, event: e}))
+	@mousedown=(do (handleMousedown e))
 	@mouseup=(do (handleMouseup e))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
