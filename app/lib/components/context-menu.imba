@@ -4,20 +4,23 @@ import * as AppOps from '$lib/ts/helpers/appOps'
 
 tag context-menu
 	prop data
-	# def mount
-	# 	console.log "menu mounted"
-	# 	console.log data
+	def mount
+		console.log "menu mounted"
+		console.log data
 
 	def addPiece(event)
+		console.log "imba data 1"
+		for piece of data.pieces
+			console.log piece
 		data = PieceOps.addPiece {data, event}
 		console.log("imba data", data.pieces)
 		data = AppOps.toggleContextMenu {data, state: 'off'}
 	# def deletePiece
 
-	<self>
+	<self.context-menu>
 		if data
 			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
-				<span @click=(addPiece)> "New Piece"
+				<span @click=(addPiece e)> "New Piece"
 			
 		# <span @click=(do PieceOps.removePiece)> "Delete Piece"
 

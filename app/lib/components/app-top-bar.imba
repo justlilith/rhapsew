@@ -42,6 +42,7 @@ css .self c:gray4 bg:black d:flex p:0.5em fld:row h:30px j:flex-start ai:center
 	.logo@hover@after content:" (rɑːp-soʊ)" fs:.625em va:top c:white
 	.menu d:flex fld:row pl:2em fs:.875em
 	button bd:none bg:none c:gray4 fs:1em d:flex fld:row va:middle
+	button@hover c:white
 	.menu-item p:0 1em va:middle d:flex fld:row ai:center
 		span cursor:pointer
 	.menu-item@first bdl:none p:0 .5em

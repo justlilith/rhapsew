@@ -50,7 +50,7 @@ function exportSvg (args) {
   document.body.removeChild(download)
 }
 
-function handleClick (args:HandleClickArgs) {
+function handleClick (args:HandleClickArgs):State {
   let data= args.data
   let event= args.event
   const id = event.target.getAttribute('data-id') ?? null
@@ -58,6 +58,7 @@ function handleClick (args:HandleClickArgs) {
   let draw = initSVGCanvas(data)
   
   console.log(event)
+  console.log("data!!", data)
   
   if (event.target.classList.contains('svg')) {
     switch (event.button) {
@@ -81,13 +82,13 @@ function handleClick (args:HandleClickArgs) {
           // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
           data.selectedPiece.points = points
           data.selectedPoint = data.selectedPiece.points.slice(-1)[0].id
-          console.log(points)
         }
         else {
           data.selectedPiece = null
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
           })
+          console.log("clicked")
         }
       } else {
         data.selectedPiece = null
@@ -128,11 +129,12 @@ interface HandleMouseArgs {
   event: MouseEvent
 }
 
-function handleMousedown (args:HandleMouseArgs) {
+function handleMousedown (args:HandleMouseArgs):State {
   let data = args.data
   let event = args.event
   console.info(`Rhapsew [Info]: Mousedown`)
   console.log(data?.selectedPiece?.points)
+  console.log(event)
   
   // !!!!!!!!!!!!!!!!!!
 
@@ -143,7 +145,7 @@ function handleMousedown (args:HandleMouseArgs) {
     
     console.info(`Rhapsew [Info]: Point selected: ${id}`)
     console.log("pieces", data.pieces)
-    console.log(data.selectedPiece)
+    console.log("selected piece pre filter", data.selectedPiece)
     data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
     console.log("selected piece", data.selectedPiece)
     data.selectedPoint = id
@@ -154,7 +156,7 @@ function handleMousedown (args:HandleMouseArgs) {
   return data  
 }
 
-function handleMouseup (args:HandleMouseArgs) {
+function handleMouseup (args:HandleMouseArgs):State {
   let data = args.data
   let event = args.event
   
@@ -175,6 +177,7 @@ function handleMove (args:HandleMoveArgs) {
     let activeLine = SVG()
     .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
     .addClass('activeLine')
+    .addClass('rhapsew-element')
     .stroke("red")
     
     draw.add(activeLine)
@@ -203,7 +206,11 @@ function init (data) {
 function initSVGCanvas (args:State) {
   let draw = SVG(`svg`)
   if (!draw) {
-    draw = SVG().addTo(args.parent).addClass(`svg`)
+    draw = SVG()
+    .addTo(args.parent)
+    .addClass(`svg`)
+    .addClass('rhapsew-element')
+
   }
   return draw
 }

@@ -7,20 +7,23 @@ import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
 
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!
 function addPiece (args:PieceArgs):State {
   let data = args.data
   let event = args.event
   
-  console.log('pieces', data.pieces)
-
-  let newPiece = new Piece({data, event})
-  data.pieces = [...data.pieces, newPiece]
+  console.log('adding a new piece')
+  console.log('current pieces', data.pieces)
+  
+  let newPiece = new Piece({data, event}) // this line right here, officer
+  console.log('pieces post new piece', data.pieces)
+  data.pieces = data.pieces.concat(newPiece)
   console.log('pieces post concat', data.pieces)
+  newPiece.points[0] = addPoint({data: args.data, event: args.event, index: 0, pieceId: newPiece.id}) // trying this out
   // data.selectedPiece = newPiece
   // data.selectedPiece = null
-
-
+  
+  
   // data.selectedPiece = data.pieces.filter(piece => piece.id = newPiece.id)[0]
   data.selectedPiece = data.pieces.slice(-1)[0]
   data.selectedPoint = data.selectedPiece.points[0].id
@@ -30,7 +33,7 @@ function addPiece (args:PieceArgs):State {
   return data
 }
 
-// !!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function addPoint (args:addPointArgs):Point {
   const data = args.data
   const pieceId = args.pieceId
@@ -39,10 +42,10 @@ function addPoint (args:addPointArgs):Point {
   const draw = AppOps.initSVGCanvas(args.data)
   const event = args.event
   const piece = data.pieces.filter(piece => piece.id = pieceId)[0]
-
+  
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
-  const point = new Point({...coords, active: true, id, index, pieceId})
+  const point = new Point({...coords, active: true, id, index, pieceId}) // <- ????
   
   if (args.event.altKey) {
     point.type = "control"
@@ -53,13 +56,13 @@ function addPoint (args:addPointArgs):Point {
     point.x = piece.points[index - 1].x
     console.log('shift')
   }
-
+  
   console.info(`Rhapsew [Info]: New point: ${point.id}`)
   
   return point
 }
 
-function renderPiece (args:RenderPieceArgs) {
+function renderPiece (args:RenderPieceArgs):void {
   let data = args.data
   let piece = args.piece
   const draw = AppOps.initSVGCanvas(data)
@@ -67,7 +70,7 @@ function renderPiece (args:RenderPieceArgs) {
   
   piece.points.forEach((point, index) => {
     let pathString = `M ${point.x} ${point.y}`
-
+    
     const point0 = point
     const pointPieceOrigin = piece.points[0]
     const point1 = piece.points[index + 1] ?? null
@@ -105,6 +108,7 @@ function renderPiece (args:RenderPieceArgs) {
     .attr({x: point.x, y: point.y, fill:"none"})
     .stroke({color:"hsl(180, 100%, 50%)", width:2})
     .addClass('segment')
+    .addClass('rhapsew-element')
     
     const segmentWrangler = SVG()
     .path(pathString)
@@ -114,6 +118,7 @@ function renderPiece (args:RenderPieceArgs) {
     .attr({x: point.x, y: point.y, fill:"none"})
     .stroke({color:"hsla(0, 0%, 0%, 0.1)", width:10})
     .addClass('segment-wrangler')
+    .addClass('rhapsew-element')
     .click((event) => {
       console.info('Rhapsew [Info]: Path clicked')
       // if (data.selectedPiece) {
@@ -130,14 +135,15 @@ function renderPiece (args:RenderPieceArgs) {
       let length = segment.length().toString()
       let text = SVG()
       .text(length)
-      .addClass('hover-measure')
       .attr({x:event.clientX, y: event.clientY})
       .font({
         family: 'sans-serif'
         , size: 12
         , anchor: "left"
       })
-
+      .addClass('hover-measure')
+      .addClass('rhapsew-element')
+      
       draw.add(text)
     })
     .on('mouseout', (event) => {
@@ -150,7 +156,7 @@ function renderPiece (args:RenderPieceArgs) {
     if (point.type == 'control') { // C, S
       draw.find(`[data-source-point-id="${point.id}"]`) ? draw.find(`[data-source-point-id="${point.id}"]`).forEach(line => line.remove()) : null
       let controlPath = []
-
+      
       if (piece.points[index - 1].type == "control" && piece.points[index + 1]) { // C
         controlPath = piece.points[index + 1] ? [point.x, point.y, piece.points[index + 1].x, piece.points[index + 1].y] : controlPath
       } else { // S
@@ -160,8 +166,9 @@ function renderPiece (args:RenderPieceArgs) {
       let controlLine = SVG()
       .line(controlPath)
       .stroke('hsla(240, 100%, 50%, 0.5)')
-      .addClass('control-line')
       .data("source-point-id", point.id)
+      .addClass('control-line')
+      .addClass('rhapsew-element')
       
       draw.add(controlLine)
       // renderedPath += ` L ${point.x} ${point.y}`
@@ -190,7 +197,7 @@ function renderPiece (args:RenderPieceArgs) {
   })
 }
 
-function renderPoint (args:RenderPointArgs) {
+function renderPoint (args:RenderPointArgs):void {
   let data = args.data
   let id = args.id
   let point = args.point
@@ -208,10 +215,11 @@ function renderPoint (args:RenderPointArgs) {
   .attr({fill: 'black', cx: point.x, cy: point.y})
   .stroke({color:"hsla(0,0%,0%,0)", width:15})
   .size(7)
-  .addClass('anchor')
   .data('id', id)
   .data('point', point)
   .data('pieceId', pieceId)
+  .addClass('anchor')
+  .addClass('rhapsew-element')
   
   draw.add(renderedPoint)
   const domSelectionBox = draw.find(`.selection-box`)[0]
@@ -220,8 +228,9 @@ function renderPoint (args:RenderPointArgs) {
   .rect()
   .attr({fill:"none", width: 20, height: 20, x: point.x -10, y: point.y -10})
   .stroke({color:"hsla(0,0%,0%,0.5)", width:2})
-  .addClass('selection-box')
   .data('id', id)
+  .addClass('selection-box')
+  .addClass('rhapsew-element')
   
   switch (data.selectedPoint == id) {
     case true:

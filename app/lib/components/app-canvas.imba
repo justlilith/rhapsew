@@ -3,15 +3,11 @@ import * as AppOps from '$lib/ts/helpers/appOps'
 import * as KeyboardOps from '$lib/ts/helpers/keyboardOps'
 import context-menu from '$lib/components/context-menu'
 
-# let points = [] # this is one piece
-# each piece is an array of Points
-# let data
-
 tag app-canvas
 	prop data
 	def mount
 		console.info "Rhapsew [Info]: App started! 🤍"
-		AppOps.init data
+		# AppOps.init data
 		AppOps.initSVGCanvas data
 		setInterval(&,100) do # renderLoop, 60-ish fps
 			unless data.pieces.length == 0
@@ -20,11 +16,27 @@ tag app-canvas
 					# piece.points.forEach do(point)
 					# 	PieceOps.renderPoint {data, id: point.id, point}
 
+	def handleMousedown(e\MouseEvent)
+		# console.log e
+		if (e.target.classList.contains('rhapsew-element'))
+			data = AppOps.handleMousedown {data, event: e}
 		
-	<self#canvas @click=(do (data = AppOps.handleClick {data, event: e}))
+	def handleClick(e\MouseEvent)
+		# console.log e
+		if (e.target.classList.contains('rhapsew-element'))
+			data = AppOps.handleClick {data, event: e}
+		
+	def handleMouseup(e\MouseEvent)
+		# console.log e
+		if (e.target.classList.contains('rhapsew-element'))
+			data = AppOps.handleMouseup {data, event: e}
+
+	<self#canvas
+	@click=(do (handleClick e))
+	@contextmenu.prevent=(do (handleClick e))
 	@mousemove=(do (data = AppOps.handleMove {data, event: e}))
-	@mousedown.self=(do (data = AppOps.handleMousedown {data, event: e}))
-	@mouseup=(do (data = AppOps.handleMouseup {data, event: e}))
+	@mousedown=(do (handleMousedown e)) # how to fix this . . .
+	@mouseup=(do (handleMouseup e))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>

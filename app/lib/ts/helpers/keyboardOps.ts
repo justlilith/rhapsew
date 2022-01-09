@@ -26,6 +26,7 @@ function escape (args: HandleKeyboardArgs):State {
       point.active = false
     })
   })
+  AppOps.toggleContextMenu({data: args.data, state: "off"})
   return args.data
 }
 
