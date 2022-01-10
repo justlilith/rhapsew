@@ -90,7 +90,7 @@ function renderPiece (args:RenderPieceArgs):void {
   const draw = AppOps.initSVGCanvas(data)
   
   
-  piece.points.forEach((point, index) => {
+  piece.points.forEach((point: PointT, index: number) => {
     let pathString = `M ${point.x} ${point.y}`
     
     const point0 = point
@@ -178,19 +178,14 @@ function renderPiece (args:RenderPieceArgs):void {
     // draw.add(segmentWrangler)
     
     if (point.type == 'control') { // C, S
-      draw.find(`[data-source-point-id="${point.id}"]`) ? draw.find(`[data-source-point-id="${point.id}"]`).forEach(line => line.remove()) : null
-      let controlPath = []
-      
-      if (piece.points[index - 1].type == "control" && piece.points[index + 1]) { // C
-        controlPath = piece.points[index + 1] ? [point.x, point.y, piece.points[index + 1].x, piece.points[index + 1].y] : controlPath
-      } else { // S
-        controlPath = [point.x, point.y, piece.points[index - 1].x, piece.points[index - 1].y]
-      }
+      let parent = point.parent
+      draw.find(`[data-parent="${parent}"]`) ? draw.find(`[data-parent="${parent}"]`).forEach(line => line.remove()) : null
+      let controlPath = [point.x, point.y, parent.x, parent.y]
       
       let controlLine = SVG()
       .line(controlPath)
       .stroke('hsla(240, 100%, 50%, 0.5)')
-      .data("source-point-id", point.id)
+      .data("parent", point.parent)
       .addClass('control-line')
       .addClass('rhapsew-element')
       

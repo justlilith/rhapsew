@@ -188,8 +188,8 @@ function handleMousemove (args:HandleMoveArgs) {
   
   if (event.ctrlKey && data.selectedPoint) {
     // data.selectedPiece.points
-    /** How do you wanna do this?
-    * 
+    /** 
+    * How do you wanna do this?
     * assume no intermediate control points
     * assume M 0 0
     * click + ctrl -> M 0 0 S 100 100 0 100
