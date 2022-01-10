@@ -25,9 +25,8 @@ class Point {
     this.type = args.type ?? "anchor"
     this.active = args.active ?? false
     this.id = args.id ?? nanoid()
-    this.index = args.index ?? null
     this.pieceId = args.pieceId
-    this.parent = args.parent ?? null
+    this.parent ??= args.parent
   }
   x: number
   y: number
@@ -35,7 +34,6 @@ class Point {
   type: "anchor" | "control"
   active: boolean
   id: string
-  index: number
   parent?: PointT
 }
 

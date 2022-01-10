@@ -19,7 +19,7 @@ function addPiece (args:PieceArgs):State {
   console.log('pieces post new piece', data.pieces)
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   console.log('pieces post concat', data.pieces)
-  newPiece.points[0] = addPoint({data, event, index: 0, pieceId: newPiece.id}) // trying this out
+  newPiece.points[0] = addPoint({data, event, pieceId: newPiece.id}) // trying this out
   // data.selectedPiece = newPiece
   // data.selectedPiece = null
   
@@ -37,22 +37,22 @@ function addPiece (args:PieceArgs):State {
   return data
 }
 
-function addPoint (args:addPointArgs):PointT {
+function addPoint (args: AddPointArgs): PointT {
   const data = args.data
   const pieceId = args.pieceId
-  const index = args.index
   const id = nanoid()
   const draw = AppOps.initSVGCanvas(args.data)
   const event = args.event
   const piece = data.pieces.filter(piece => piece.id == pieceId)[0]
+  const parent = args.parent ?? null
   
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
-  const point = new Point({...coords, active: true, id, index, pieceId}) // <- ????
+  const point = new Point({...coords, active: true, id, pieceId, parent})
   
   if (args.event.shiftKey) {
     // point.type = "control"
-    point.x = piece.points[index - 1].x
+    point.x = piece.points.slice(-1)[0].x
     console.log('shift')
   }
   

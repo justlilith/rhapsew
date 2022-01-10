@@ -27,7 +27,6 @@ interface NewPointArgs {
   type?: "anchor" | "control"
   active?: boolean
   id: string
-  index: number
   parent?: PointT
 }
 
@@ -38,7 +37,6 @@ interface PointT {
   type: "anchor" | "control"
   active: boolean
   id: string
-  index: number
   parent?:PointT
 }
 
@@ -52,11 +50,11 @@ interface EventTarget {
 
 
 
-interface addPointArgs {
+interface AddPointArgs {
   event: MouseEvent
   data: State
-  index: number
   pieceId: string
+  parent?: PointT
 }
 
 interface FindPreviousSegmentArgs {

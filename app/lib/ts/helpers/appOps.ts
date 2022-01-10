@@ -119,7 +119,7 @@ function handleMousedown (args:HandleMouseArgs):State {
       if (data.selectedPiece) {
         console.log("selected piece", data.selectedPiece)
         if (!data.selectedPiece.closed) {
-          const newPoint = PieceOps.addPoint({...args, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id})
+          const newPoint = PieceOps.addPoint({...args, pieceId: data.selectedPiece.id})
           // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
           points = [...data.selectedPiece.points, newPoint]
           // data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
@@ -230,12 +230,12 @@ function handleMousemove (args:HandleMoveArgs) {
         case 2: // S
         break
         case 1: // L
-        const newPoint = new Point({...coords, active: true, id, index, pieceId})
         // insert new control point with current segment as parent segment
+        const newPoint = PieceOps.addPoint({event, data, pieceId: data.selectedPiece.id, parent: data.selectedPoint})
         break
         case 0: // M
         // console.log(data)
-        data.selectedPiece.points = data.selectedPiece.points.concat(PieceOps.addPoint({event, data, index: 1, pieceId: data.selectedPiece.id}))
+        data.selectedPiece.points = data.selectedPiece.points.concat(PieceOps.addPoint({event, data, pieceId: data.selectedPiece.id}))
         data.selectedPiece.points[1].type = 'control'
         data.selectedPoint = data.selectedPiece.points[1]
         default:
