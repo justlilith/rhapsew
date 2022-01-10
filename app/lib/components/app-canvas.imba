@@ -4,7 +4,6 @@ import * as KeyboardOps from '$lib/ts/helpers/keyboardOps'
 import context-menu from '$lib/components/context-menu'
 
 
-# <global @rhapsewZoom=(do (handleZoom e))>
 
 tag app-canvas
 	prop data\State
@@ -18,7 +17,7 @@ tag app-canvas
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}
-
+	
 	def handleZoom(event)
 		# console.log event
 		# console.log data.zoom
@@ -42,6 +41,7 @@ tag app-canvas
 			data = AppOps.handleMouseup {data, event: e}
 
 	<self#canvas
+	# @keypress=(console.log)
 	@click=(do (handleClick e))
 	@rhapsewZoom=(do (handleZoom e))
 	@contextmenu.prevent=(do (handleClick e))
@@ -50,6 +50,7 @@ tag app-canvas
 	@mouseup=(do (handleMouseup e))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
+	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 
 		if data..menu

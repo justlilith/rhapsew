@@ -186,19 +186,19 @@ function handleMousemove (args:HandleMoveArgs) {
     })
   }
   
-  if (event.altKey && data.selectedPoint) {
+  if (event.ctrlKey && data.selectedPoint) {
     // data.selectedPiece.points
     /** How do you wanna do this?
     * 
     * assume no intermediate control points
     * assume M 0 0
-    * click + alt -> M 0 0 S 100 100 0 100
+    * click + ctrl -> M 0 0 S 100 100 0 100
     * 2 points to 3 points
     * [0, 1] -> [0, new, 1]
     * segment points = [points[0], new, points[1]]
     * 
     * if intermediate control points
-    * click alt -> 3 points to 4 points
+    * click ctrl -> 3 points to 4 points
     * [0, 1, 2] -> [0, 1, new, 2]
     * It's always the second to last of an array...
     * 
@@ -210,7 +210,7 @@ function handleMousemove (args:HandleMoveArgs) {
     * 
     * Don't forget that control points have different behavior
     * 
-    * What about alt+click? Because this is only for alt+drag!!
+    * What about ctrl+click? Because this is only for ctrl+drag!!
     */
     
     let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
@@ -230,6 +230,7 @@ function handleMousemove (args:HandleMoveArgs) {
         case 2: // S
         break
         case 1: // L
+        const newPoint = new Point({...coords, active: true, id, index, pieceId})
         // insert new control point with current segment as parent segment
         break
         case 0: // M

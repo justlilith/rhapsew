@@ -19,7 +19,7 @@ class Piece {
 }
 
 class Point {
-  constructor(args) {
+  constructor(args:NewPointArgs) {
     this.x = args.x
     this.y = args.y
     this.type = args.type ?? "anchor"

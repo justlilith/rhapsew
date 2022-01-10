@@ -50,10 +50,6 @@ function addPoint (args:addPointArgs):PointT {
   
   const point = new Point({...coords, active: true, id, index, pieceId}) // <- ????
   
-  // if (args.event.altKey) {
-  //   point.type = "control"
-  //   console.log('alt')
-  // }
   if (args.event.shiftKey) {
     // point.type = "control"
     point.x = piece.points[index - 1].x

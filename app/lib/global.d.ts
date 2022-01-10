@@ -20,6 +20,18 @@ interface PieceT {
   id: string
 }
 
+interface NewPointArgs {
+  x: number
+  y: number
+  pieceId: string
+  type?: "anchor" | "control"
+  active?: boolean
+  id: string
+  index: number
+  parent?: PointT
+}
+
+
 interface PointT {
   x: number
   y: number
