@@ -12,7 +12,7 @@ class Piece {
     // this.points = [new Point({x:0, y:0, active: true, id, index: 0, pieceId: id})]
     this.closed = false
   }
-  points: Point[]
+  points: PointT[]
   name: string = "init"
   closed: boolean
   id: string
@@ -24,9 +24,10 @@ class Point {
     this.y = args.y
     this.type = args.type ?? "anchor"
     this.active = args.active ?? false
-    this.id = args.id ?? null
+    this.id = args.id ?? nanoid()
     this.index = args.index ?? null
     this.pieceId = args.pieceId
+    this.parent = args.parent ?? null
   }
   x: number
   y: number
@@ -35,6 +36,7 @@ class Point {
   active: boolean
   id: string
   index: number
+  parent?: PointT
 }
 
 export {

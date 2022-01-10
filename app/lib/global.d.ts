@@ -2,31 +2,32 @@ interface State {
   currentTheme: string
   units: string
   zoom: number
-  pieces: Piece[]
+  pieces: PieceT[]
   status: string
   parent: string
   menu: boolean
-  selectedPiece: Piece|null
-  selectedPoint: string
+  selectedPiece: PieceT|null
+  selectedPoint: PointT|null
   menuX: number|null
   menuY: number|null
   moving: boolean
 }
 
-interface Piece {
-  points: Point[]
+interface PieceT {
+  points: PointT[]
   name: string
   closed: boolean
   id: string
 }
 
-interface Point {
+interface PointT {
   x: number
   y: number
   type: "anchor" | "control"
   active: boolean
   id: string
   index: number
+  parent?:PointT
 }
 
 interface EventTarget {
@@ -44,6 +45,11 @@ interface addPointArgs {
   data: State
   index: number
   pieceId: string
+}
+
+interface FindPreviousSegmentArgs {
+  data: State
+  point: PointT
 }
 
 interface HandleClickArgs {
@@ -78,6 +84,6 @@ interface RenderPieceArgs {
 interface RenderPointArgs {
   id: string
   data: State
-  point: Point
-  piece: Piece
+  point: PointT
+  piece: PieceT
 }

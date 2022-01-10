@@ -10,7 +10,7 @@ function deleteKey (args: HandleKeyboardArgs):State {
   let data = args.data
   console.info('Rhapsew [Info]: Key pressed: Delete')
   args.data.pieces = args.data.pieces.map(piece => {
-    const newPoints = piece.points.filter(point => point.id != data.selectedPoint)
+    const newPoints = piece.points.filter(point => point.id != data.selectedPoint.id)
     PieceOps.renderPiece({data, piece: {...piece, points: newPoints}})
     return {...piece, points: newPoints}
   })

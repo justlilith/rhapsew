@@ -15,7 +15,7 @@ function addPiece (args:PieceArgs):State {
   console.log('current pieces', data.pieces)
   
   // let newPiece = new Piece({data, event}) // this line right here, officer
-  let newPiece:Piece = {points: [], name: "test", closed: false, id: nanoid()} // wait nvm
+  let newPiece:PieceT = {points: [], name: "test", closed: false, id: nanoid()} // wait nvm
   console.log('pieces post new piece', data.pieces)
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   console.log('pieces post concat', data.pieces)
@@ -26,18 +26,18 @@ function addPiece (args:PieceArgs):State {
   
   data.selectedPiece = data.pieces.filter(piece => piece.id == newPiece.id)[0]
   // data.selectedPiece = data.pieces.slice(-1)[0]
-  data.selectedPoint = data.selectedPiece.points[0].id
+  data.selectedPoint = data.selectedPiece.points[0]
   console.info(`Rhapsew [Info]: New piece added: ${data.selectedPiece.id}`)
   console.info("selected piece", data.selectedPiece)
   console.log('pieces', data.pieces)
   for (let piece of data.pieces) {
     console.log('piece', piece)
   }
-
+  
   return data
 }
 
-function addPoint (args:addPointArgs):Point {
+function addPoint (args:addPointArgs):PointT {
   const data = args.data
   const pieceId = args.pieceId
   const index = args.index
@@ -63,6 +63,28 @@ function addPoint (args:addPointArgs):Point {
   console.info(`Rhapsew [Info]: New point: ${point.id}`)
   
   return point
+}
+
+function findPreviousSegment (args:FindPreviousSegmentArgs):PointT {
+  let data = args.data
+  let piece = data.selectedPiece
+  let point = piece.points.filter(point => point.id == data.selectedPoint.id)[0]
+  let pointIndex = piece.points.indexOf(point)
+  let prevSegment
+  /**
+  * Given a point and piece
+  * search through the piece's points for the previous anchor
+  * negative lookbehind?? (not regex tho)
+  * is index - 1 an anchor?
+  * if not, look for index - 2, etc
+  */
+  for (let index = pointIndex - 1; index > -1; index--) {
+    if (piece.points[index].type == "anchor") {
+      prevSegment = piece.points[index]
+      break
+    }
+  }
+  return prevSegment
 }
 
 function renderPiece (args:RenderPieceArgs):void {
@@ -138,7 +160,7 @@ function renderPiece (args:RenderPieceArgs):void {
     .on('mouseover', (event:MouseEvent) => {
       let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
       let length = segment.length().toPrecision(5).toString()
-
+      
       let text = SVG()
       .text(length)
       .attr({x: mousePoint.x + 20, y: mousePoint.y + 25})
@@ -238,14 +260,16 @@ function renderPoint (args:RenderPointArgs):void {
   .addClass('selection-box')
   .addClass('rhapsew-element')
   
-  switch (data.selectedPoint == id) {
-    case true:
-    if (domSelectionBox) {
-      domSelectionBox.remove()
+  if (data.selectedPoint) {
+    switch (data.selectedPoint.id == id) {
+      case true:
+      if (domSelectionBox) {
+        domSelectionBox.remove()
+      }
+      draw.add(selectionBox)
+      break
+      default:
     }
-    draw.add(selectionBox)
-    break
-    default:
   }
 }
 
@@ -253,6 +277,7 @@ function renderPoint (args:RenderPointArgs):void {
 export {
   addPiece
   , addPoint
+  , findPreviousSegment
   , renderPiece
   , renderPoint
 }

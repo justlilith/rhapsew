@@ -3,6 +3,7 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 // import type { State } from 'app/lib/global'
 import type { Element } from '@svgdotjs/svg.js'
 import '@svgdotjs/svg.panzoom.js'
+import { Point } from '../classes'
 
 const TOPBARHEIGHT = 30
 
@@ -16,7 +17,7 @@ function clearScreen (args):State {
   data.selectedPiece = null
   data.selectedPoint = null
   data.pieces = []
-
+  
   draw.clear()
   return data
 }
@@ -73,36 +74,36 @@ function handleMousedown (args:HandleMouseArgs):State {
   let data = args.data
   let event = args.event
   let draw = initSVGCanvas(data)
-
+  
   console.info(`Rhapsew [Info]: Mousedown`)
   console.log(data?.selectedPiece?.points)
   console.log(event)
   
-
+  
   if (event.target.classList.contains(`anchor`)) {
-    let id = event.target.getAttribute('data-id')
-    let domPoint:Point = JSON.parse(event.target.getAttribute('data-point'))
+    let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
+    let id = domPoint.id
     let pieceId: string = event.target.getAttribute('data-pieceId')
     
     data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
-    data.selectedPoint = id
+    data.selectedPoint = domPoint
     data.moving = true
-
+    
     console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
     console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
     console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
     
-    if (id == data.selectedPiece.points[0].id) {
+    if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
       data.selectedPiece.closed = true
       console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
     }
-
+    
     draw.find('.activeLine').forEach(element => element.remove())
     data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
   }
-
-
-
+  
+  
+  
   if (event.target.classList.contains('svg')) {
     switch (event.button) {
       case 2: // right-click
@@ -124,10 +125,11 @@ function handleMousedown (args:HandleMouseArgs):State {
           // data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
           // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
           data.selectedPiece.points = points
-          data.selectedPoint = data.selectedPiece.points.slice(-1)[0].id
+          data.selectedPoint = data.selectedPiece.points.slice(-1)[0]
         }
         else {
           data.selectedPiece = null
+          data.selectedPoint = null
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
           })
@@ -135,13 +137,14 @@ function handleMousedown (args:HandleMouseArgs):State {
         }
       } else {
         data.selectedPiece = null
+        data.selectedPoint = null
         data.pieces.forEach(piece => {
           piece.points.forEach(point => point.active = false)
         })
       }
     }
   }
-
+  
   return data  
 }
 
@@ -173,7 +176,7 @@ function handleMousemove (args:HandleMoveArgs) {
   }
   
   if (data.selectedPoint && data.moving) {
-    let id = data.selectedPoint
+    let id = data.selectedPoint.id
     data.selectedPiece.points = data.selectedPiece.points.map(point => {
       if (point.id == id) {
         point.x = SVG(`svg`).point(event.clientX, event.clientY).x
@@ -182,37 +185,67 @@ function handleMousemove (args:HandleMoveArgs) {
       return point
     })
   }
-
+  
   if (event.altKey && data.selectedPoint) {
     // data.selectedPiece.points
     /** How do you wanna do this?
-     * 
-     * assume no intermediate control points
-     * assume M 0 0
-     * click + alt -> M 0 0 S 100 100 0 100
-     * 2 points to 3 points
-     * [0, 1] -> [0, new, 1]
-     * segment points = [points[0], new, points[1]]
-     * 
-     * if intermediate control points
-     * click alt -> 3 points to 4 points
-     * [0, 1, 2] -> [0, 1, new, 2]
-     * It's always the second to last of an array...
-     * 
-     * how do we get the points of a segment??
-     * what about the first point?
-     */
-    let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint)[0]
+    * 
+    * assume no intermediate control points
+    * assume M 0 0
+    * click + alt -> M 0 0 S 100 100 0 100
+    * 2 points to 3 points
+    * [0, 1] -> [0, new, 1]
+    * segment points = [points[0], new, points[1]]
+    * 
+    * if intermediate control points
+    * click alt -> 3 points to 4 points
+    * [0, 1, 2] -> [0, 1, new, 2]
+    * It's always the second to last of an array...
+    * 
+    * how do we get the points of a segment??
+    * what about the first point?
+    * 
+    * A segment's id is the same as the anchor point that begins it!
+    * get the previous segment and check it
+    * 
+    * Don't forget that control points have different behavior
+    * 
+    * What about alt+click? Because this is only for alt+drag!!
+    */
+    
+    let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
     let pointIndex = data.selectedPiece.points.indexOf(point) // returns -1 if not present!!
-
-    if (!data.selectedPiece.points[pointIndex - 2]) {
-      
-    } else if (!data.selectedPiece.points[pointIndex - 1]) {
+    let previousSegment = PieceOps.findPreviousSegment({data, point})
+    let previousSegmentIndex = 0
+    if (previousSegmentIndex) {
+      previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
+    }
+    if (point.type == "anchor") {
+      let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
+      // console.log(range)
+      // range.length /* 1 or 2 */ 
+      switch (range.length) {
+        case 3: // C
+        break
+        case 2: // S
+        break
+        case 1: // L
+        // insert new control point with current segment as parent segment
+        break
+        case 0: // M
+        // console.log(data)
+        data.selectedPiece.points = data.selectedPiece.points.concat(PieceOps.addPoint({event, data, index: 1, pieceId: data.selectedPiece.id}))
+        data.selectedPiece.points[1].type = 'control'
+        data.selectedPoint = data.selectedPiece.points[1]
+        default:
+        break
+      }
+    } else { // "control"
       
     }
-
+    
   }
-
+  
   return data
 }
 
@@ -233,16 +266,16 @@ function initSVGCanvas (data:State) {
     .viewbox(0,0,1000,100)
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
-
+    
     draw.on('zoom', (event) => {
       // console.log(event)
       // data.zoom = event.detail.level
       // draw.fire('rhapsewZoom', event)
       window.dispatchEvent(new CustomEvent('rhapsewZoom', event))
-
+      
     })
     // window.addEventListener('rhapsewZoom', e => console.log("whoa", e))
-
+    
   }
   return draw
 }
@@ -270,7 +303,7 @@ function writeToStatus () {
 }
 
 export {
-    clearScreen
+  clearScreen
   , exportSvg
   , handleClick
   , handleMousedown
