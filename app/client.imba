@@ -2,6 +2,7 @@ import app-statusbar from '$lib/components/app-statusbar'
 import app-canvas from '$lib/components/app-canvas'
 import app-top-bar from '$lib/components/app-top-bar'
 import * as AppOps from '$lib/ts/helpers/appOps'
+import * as History from '$lib/ts/helpers/HistoryManager'
 
 let state\State =
 	{
@@ -18,6 +19,12 @@ let state\State =
 		menuY: null
 		moving: null
 	}
+
+History.set state
+# History.limit 1000
+History.subscribe do(e)
+	console.log e.detail
+	state = e.detail
 
 tag app
 	<self.app.{state.currentTheme}>

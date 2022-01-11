@@ -4,6 +4,7 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import type { Element } from '@svgdotjs/svg.js'
 import '@svgdotjs/svg.panzoom.js'
 import { Point } from '../classes'
+import * as History from '$lib/ts/helpers/HistoryManager'
 
 const TOPBARHEIGHT = 30
 
@@ -216,28 +217,38 @@ function handleMousemove (args:HandleMoveArgs) {
     let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
     let pointIndex = data.selectedPiece.points.indexOf(point) // returns -1 if not present!!
     let previousSegment = PieceOps.findPreviousSegment({data, point})
-    let previousSegmentIndex = 0
-    if (previousSegmentIndex) {
-      previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
-    }
+    let previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
     if (point.type == "anchor") {
       let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
+      let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: data.selectedPiece.id, parent: data.selectedPoint})
       // console.log(range)
       // range.length /* 1 or 2 */ 
+      const after = data.selectedPiece.points.slice(pointIndex)
+      
       switch (range.length) {
         case 3: // C
         break
         case 2: // S
         break
-        case 1: // L
-        // insert new control point with current segment as parent segment
-        const newPoint = PieceOps.addPoint({event, data, pieceId: data.selectedPiece.id, parent: data.selectedPoint})
-        break
-        case 0: // M
-        // console.log(data)
-        data.selectedPiece.points = data.selectedPiece.points.concat(PieceOps.addPoint({event, data, pieceId: data.selectedPiece.id}))
-        data.selectedPiece.points[1].type = 'control'
-        data.selectedPoint = data.selectedPiece.points[1]
+        case 1: {// L
+          // insert new control point with current segment as parent segment before current point
+          const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
+          const finalPointsArray = [...before, newPoint, ...after]
+          console.log(finalPointsArray)
+          data.selectedPiece.points = finalPointsArray
+          data.selectedPoint = data.selectedPiece.points[data.selectedPiece.points.indexOf(newPoint)]
+          break
+        }
+        case 0: {// M
+          // insert new control point after current point
+          console.log(previousSegmentIndex)
+          const before = data.selectedPoint
+          const finalPointsArray = [before, newPoint, ...after]
+          console.log(finalPointsArray)
+          data.selectedPiece.points = finalPointsArray
+          data.selectedPoint = data.selectedPiece.points[data.selectedPiece.points.indexOf(newPoint)]
+          break
+        }
         default:
         break
       }

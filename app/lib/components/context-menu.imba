@@ -1,3 +1,4 @@
+import * as HistoryManager from '../ts/helpers/HistoryManager'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as AppOps from '$lib/ts/helpers/appOps'
 
@@ -9,12 +10,11 @@ tag context-menu
 		console.log data
 
 	def addPiece(event)
-		console.log "imba data 1"
 		for piece of data.pieces
 			console.log piece
 		data = PieceOps.addPiece {data, event}
-		console.log("imba data", data.pieces)
-		data = AppOps.toggleContextMenu {data, state: 'off'}
+		HistoryManager.append (AppOps.toggleContextMenu {data, state: 'off'})
+	
 	# def deletePiece
 
 	<self.context-menu>

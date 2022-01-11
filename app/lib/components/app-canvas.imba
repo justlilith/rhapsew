@@ -1,3 +1,4 @@
+import * as HistoryManager from '../ts/helpers/HistoryManager'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import * as KeyboardOps from '$lib/ts/helpers/keyboardOps'
@@ -33,12 +34,14 @@ tag app-canvas
 	def handleClick(e\MouseEvent)
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
-			data = AppOps.handleClick {data, event: e}
+			console.log 'clicked'
+			data = (AppOps.handleClick {data, event: e})
+			 
 		
 	def handleMouseup(e\MouseEvent)
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
-			data = AppOps.handleMouseup {data, event: e}
+			HistoryManager.append (AppOps.handleMouseup {data, event: e})
 
 	<self#canvas
 	# @keypress=(console.log)
@@ -50,6 +53,9 @@ tag app-canvas
 	@mouseup=(do (handleMouseup e))
 	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
 	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
+	@hotkey('ctrl+z')=(do (HistoryManager.undo!))
+	@hotkey('ctrl+shift+z')=(do (HistoryManager.redo!))
+	@hotkey('ctrl+y')=(do (HistoryManager.redo!))
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 

@@ -2,7 +2,7 @@ import { SVG } from '@svgdotjs/svg.js'
 import { Piece, Point } from '$lib/ts/classes'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import { nanoid } from 'nanoid'
-import * as F from 'futil-js'
+import * as History from '$lib/ts/helpers/HistoryManager'
 import * as _ from 'lodash'
 
 const TOPBARHEIGHT = 30
@@ -45,10 +45,11 @@ function addPoint (args: AddPointArgs): PointT {
   const event = args.event
   const piece = data.pieces.filter(piece => piece.id == pieceId)[0]
   const parent = args.parent ?? null
+  const type = args.type ?? "anchor"
   
   let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
-  const point = new Point({...coords, active: true, id, pieceId, parent})
+  const point = new Point({...coords, active: true, type, id, pieceId, parent})
   
   if (args.event.shiftKey) {
     // point.type = "control"
@@ -179,13 +180,13 @@ function renderPiece (args:RenderPieceArgs):void {
     
     if (point.type == 'control') { // C, S
       let parent = point.parent
-      draw.find(`[data-parent="${parent}"]`) ? draw.find(`[data-parent="${parent}"]`).forEach(line => line.remove()) : null
+      draw.find(`[data-parent-id="${parent.id}"]`) ? draw.find(`[data-parent-id="${parent.id}"]`).forEach(line => line.remove()) : null
       let controlPath = [point.x, point.y, parent.x, parent.y]
       
       let controlLine = SVG()
       .line(controlPath)
       .stroke('hsla(240, 100%, 50%, 0.5)')
-      .data("parent", point.parent)
+      .data("parent-id", point.parent.id)
       .addClass('control-line')
       .addClass('rhapsew-element')
       

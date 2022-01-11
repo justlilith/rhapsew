@@ -55,6 +55,7 @@ interface AddPointArgs {
   data: State
   pieceId: string
   parent?: PointT
+  type?: "control" | "anchor"
 }
 
 interface FindPreviousSegmentArgs {

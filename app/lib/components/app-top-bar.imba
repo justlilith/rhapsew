@@ -1,3 +1,4 @@
+import * as HistoryManager from '../ts/helpers/HistoryManager'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as AppOps from '$lib/ts/helpers/appOps'
 
@@ -9,15 +10,15 @@ tag app-top-bar
 				<button>
 					<span.material-icons-outlined> "construction"
 					<span> "Tools"
-			<div.menu-item>
+			<div.menu-item @click=(do (HistoryManager.undo!))>
 				<button>
 					<span.material-icons-outlined> "undo"
 					<span> "Undo"
 			<div.menu-item>
-				<button>
+				<button  @click=(do (HistoryManager.redo!))>
 					<span.material-icons-outlined> "redo"
 					<span> "Redo"
-			<div.menu-item @click=(do (data = AppOps.clearScreen {data}))>
+			<div.menu-item @click=(do (HistoryManager.append (AppOps.clearScreen {data})))>
 				<button>
 					<span.material-icons-outlined> "clear_all"
 					<span> "Clear"
