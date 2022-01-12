@@ -23,8 +23,9 @@ let state\State =
 History.set state
 # History.limit 1000
 History.subscribe do(e)
-	console.log e.detail
 	state = e.detail
+	console.log state
+	console.log state.pieces..[0]
 
 tag app
 	<self.app.{state.currentTheme}>

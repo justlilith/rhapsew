@@ -4,7 +4,7 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import type { Element } from '@svgdotjs/svg.js'
 import '@svgdotjs/svg.panzoom.js'
 import { Point } from '../classes'
-import * as History from '$lib/ts/helpers/HistoryManager'
+import * as HistoryManager from '$lib/ts/helpers/HistoryManager'
 
 const TOPBARHEIGHT = 30
 
@@ -77,6 +77,7 @@ function handleMousedown (args:HandleMouseArgs):State {
   let draw = initSVGCanvas(data)
   
   console.info(`Rhapsew [Info]: Mousedown`)
+  console.log(data?.pieces)
   console.log(data?.selectedPiece?.points)
   console.log(event)
   
@@ -85,6 +86,7 @@ function handleMousedown (args:HandleMouseArgs):State {
     let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
     let id = domPoint.id
     let pieceId: string = event.target.getAttribute('data-pieceId')
+    console.log(data.pieces)
     
     data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
     data.selectedPoint = domPoint
@@ -94,12 +96,15 @@ function handleMousedown (args:HandleMouseArgs):State {
     console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
     console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
     
+    console.log(data.selectedPiece.points[0].id)
+    console.log(data.selectedPiece.points.length)
     if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
       data.selectedPiece.closed = true
       console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
     }
     
     draw.find('.activeLine').forEach(element => element.remove())
+    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points.forEach(point => point.id == id ? point.active = true : point.active = false)
     data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
   }
   
@@ -113,6 +118,7 @@ function handleMousedown (args:HandleMouseArgs):State {
       break
       case 0:
       default: // left-click
+      // this area right here, officer
       data = toggleContextMenu({data, state:'off'})
       let points = []
       data.selectedPoint = null
@@ -123,8 +129,9 @@ function handleMousedown (args:HandleMouseArgs):State {
           const newPoint = PieceOps.addPoint({...args, pieceId: data.selectedPiece.id})
           // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
           points = [...data.selectedPiece.points, newPoint]
-          // data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
           // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
+          // no circular references — update both
+          data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
           data.selectedPiece.points = points
           data.selectedPoint = data.selectedPiece.points.slice(-1)[0]
         }
@@ -146,7 +153,7 @@ function handleMousedown (args:HandleMouseArgs):State {
     }
   }
   
-  return data  
+  return data
 }
 
 function handleMouseup (args:HandleMouseArgs):State {
@@ -164,7 +171,7 @@ function handleMousemove (args:HandleMoveArgs) {
   
   let draw = initSVGCanvas(data)
   
-  if (data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
+  if (!data.menu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
     let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
     let activeLine = SVG()
@@ -218,9 +225,16 @@ function handleMousemove (args:HandleMoveArgs) {
     let pointIndex = data.selectedPiece.points.indexOf(point) // returns -1 if not present!!
     let previousSegment = PieceOps.findPreviousSegment({data, point})
     let previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
+    const previousPositionPoint = (HistoryManager.previous() as State)
+    .selectedPiece
+    .points
+    .filter(point => point.id == (HistoryManager.previous()).selectedPoint.id)[0]
+    console.log(previousPositionPoint)
+    console.log(data.selectedPoint.id)
+    const coords = {x: previousPositionPoint.x, y: previousPositionPoint.y}
     if (point.type == "anchor") {
       let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
-      let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: data.selectedPiece.id, parent: data.selectedPoint})
+      let newPoint = PieceOps.addPoint({coords, event, data, type: "control", pieceId: data.selectedPiece.id, parent: data.selectedPoint})
       // console.log(range)
       // range.length /* 1 or 2 */ 
       const after = data.selectedPiece.points.slice(pointIndex)

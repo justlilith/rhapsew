@@ -14,12 +14,9 @@ function addPiece (args:PieceArgs):State {
   console.log('adding a new piece')
   console.log('current pieces', data.pieces)
   
-  // let newPiece = new Piece({data, event}) // this line right here, officer
   let newPiece:PieceT = {points: [], name: "test", closed: false, id: nanoid()} // wait nvm
-  console.log('pieces post new piece', data.pieces)
-  data.pieces = data.pieces.concat(newPiece) // <- This works fine
-  console.log('pieces post concat', data.pieces)
   newPiece.points[0] = addPoint({data, event, pieceId: newPiece.id}) // trying this out
+  data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
   // data.selectedPiece = null
   
@@ -46,9 +43,10 @@ function addPoint (args: AddPointArgs): PointT {
   const piece = data.pieces.filter(piece => piece.id == pieceId)[0]
   const parent = args.parent ?? null
   const type = args.type ?? "anchor"
+  const coords = args.coords ?? SVG(`svg`).point(args.event.pageX, args.event.pageY)
   
-  let coords = SVG(`svg`).point(args.event.pageX, args.event.pageY)
-  
+  console.log(coords)
+
   const point = new Point({...coords, active: true, type, id, pieceId, parent})
   
   if (args.event.shiftKey) {
@@ -265,6 +263,11 @@ function renderPoint (args:RenderPointArgs):void {
   }
 }
 
+function wipe (data:State) {
+  const draw = AppOps.initSVGCanvas(data)
+  draw.find('.rhapsew-element').forEach(element => element.remove())
+}
+
 
 export {
   addPiece
@@ -272,4 +275,5 @@ export {
   , findPreviousSegment
   , renderPiece
   , renderPoint
+  , wipe
 }

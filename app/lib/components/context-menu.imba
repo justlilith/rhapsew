@@ -17,7 +17,7 @@ tag context-menu
 	
 	# def deletePiece
 
-	<self.context-menu>
+	<self.context-menu[opacity@off:0 ease:0.25s] ease>
 		if data
 			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
 				<div.menu-item>

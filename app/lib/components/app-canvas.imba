@@ -14,11 +14,14 @@ tag app-canvas
 		AppOps.initSVGCanvas data
 		window.addEventListener('rhapsewZoom', &) do(e)
 			handleZoom e
-		setInterval(&,100) do # renderLoop, 60-ish fps
+		setInterval(&,50) do # renderLoop; 20 == 50fps, 100 == 10fps
+			PieceOps.wipe data
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}
-	
+		# setInterval(&,1000) do
+		# 	console.log data
+
 	def handleZoom(event)
 		# console.log event
 		# console.log data.zoom
@@ -26,18 +29,16 @@ tag app-canvas
 		imba.commit!
 	
 	def handleMousedown(e\MouseEvent)
-		# emit "rhapsewZoom"
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
-			data = AppOps.handleMousedown {data, event: e}
-		
+			data = (AppOps.handleMousedown {data, event: e})
+
 	def handleClick(e\MouseEvent)
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
 			console.log 'clicked'
 			data = (AppOps.handleClick {data, event: e})
 			 
-		
 	def handleMouseup(e\MouseEvent)
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
@@ -51,8 +52,8 @@ tag app-canvas
 	@mousemove=(do (data = AppOps.handleMousemove {data, event: e}))
 	@mousedown=(do (handleMousedown e))
 	@mouseup=(do (handleMouseup e))
-	@hotkey('esc')=(do (data = KeyboardOps.escape {data}))
-	@hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
+	@hotkey('esc')=(do (HistoryManager.append (KeyboardOps.escape {data})))
+	@hotkey('del')=(do (HistoryManager.append (KeyboardOps.deleteKey {data})))
 	@hotkey('ctrl+z')=(do (HistoryManager.undo!))
 	@hotkey('ctrl+shift+z')=(do (HistoryManager.redo!))
 	@hotkey('ctrl+y')=(do (HistoryManager.redo!))
