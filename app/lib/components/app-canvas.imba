@@ -15,7 +15,7 @@ tag app-canvas
 		window.addEventListener('rhapsewZoom', &) do(e)
 			handleZoom e
 		setInterval(&,50) do # renderLoop; 20 == 50fps, 100 == 10fps
-			PieceOps.wipe data
+			# PieceOps.wipe data
 			unless data.pieces.length == 0
 				for piece of data.pieces
 					PieceOps.renderPiece {piece, data}

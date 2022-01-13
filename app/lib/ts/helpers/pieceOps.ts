@@ -177,7 +177,7 @@ function renderPiece (args:RenderPieceArgs):void {
     // draw.add(segmentWrangler)
     
     if (point.type == 'control') { // C, S
-      let parent = point.parent
+      let parent = data.pieces.filter(p => p.id == piece.id)[0].points.filter(p => p.id == point.parent.id)[0]
       draw.find(`[data-parent-id="${parent.id}"]`) ? draw.find(`[data-parent-id="${parent.id}"]`).forEach(line => line.remove()) : null
       let controlPath = [point.x, point.y, parent.x, parent.y]
       

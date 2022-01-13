@@ -196,7 +196,7 @@ function handleMousemove (args:HandleMoveArgs) {
   
   if (event.ctrlKey && data.selectedPoint) {
     // data.selectedPiece.points
-    /** 
+    /* 
     * How do you wanna do this?
     * assume no intermediate control points
     * assume M 0 0
@@ -221,23 +221,43 @@ function handleMousemove (args:HandleMoveArgs) {
     * What about ctrl+click? Because this is only for ctrl+drag!!
     */
     
-    let point = data.selectedPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
-    let pointIndex = data.selectedPiece.points.indexOf(point) // returns -1 if not present!!
-    let previousSegment = PieceOps.findPreviousSegment({data, point})
+    /**
+    * Okay, so
+    * := insert a new control point after the current point
+    * := set the points array in the filtered piece
+    * := assign the new point to/as selected
+    * := set the x y of the old point to its old position
+    */
+    
+    let currentPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
+    let currentPoint = currentPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
+    let pointIndex = data.selectedPiece.points.indexOf(currentPoint) // returns -1 if not present!!
+    
+    let previousSegment = PieceOps.findPreviousSegment({data, point: currentPoint})
     let previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
+    
     const previousPositionPoint = (HistoryManager.previous() as State)
     .selectedPiece
     .points
-    .filter(point => point.id == (HistoryManager.previous()).selectedPoint.id)[0]
-    console.log(previousPositionPoint)
-    console.log(data.selectedPoint.id)
+    .filter(point => point.id == currentPoint.id)[0];
+    
+    console.log(HistoryManager.previous())
     const coords = {x: previousPositionPoint.x, y: previousPositionPoint.y}
-    if (point.type == "anchor") {
-      let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
-      let newPoint = PieceOps.addPoint({coords, event, data, type: "control", pieceId: data.selectedPiece.id, parent: data.selectedPoint})
-      // console.log(range)
+    
+    console.log("previous position", previousPositionPoint)
+    console.log("current position", data.selectedPoint)
+    if (currentPoint.type == "anchor") {
+      
       // range.length /* 1 or 2 */ 
+      let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
+      // console.log(range)
+      
       const after = data.selectedPiece.points.slice(pointIndex)
+      
+      // data.selectedPoint = {...data.selectedPoint, x: coords.x, y: coords.y}
+      currentPoint.x = coords.x
+      currentPoint.y = coords.y
+      currentPiece.points.filter(point => point.id == currentPoint.id)[0] = {...currentPoint, x: coords.x, y: coords.y}
       
       switch (range.length) {
         case 3: // C
@@ -245,21 +265,36 @@ function handleMousemove (args:HandleMoveArgs) {
         case 2: // S
         break
         case 1: {// L
-          // insert new control point with current segment as parent segment before current point
-          const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
+          // insert new control point with current segment as parent segment after current point
+          // const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
+          let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint})
+          const before = currentPiece.points.slice(0, previousSegmentIndex + 1)
           const finalPointsArray = [...before, newPoint, ...after]
           console.log(finalPointsArray)
-          data.selectedPiece.points = finalPointsArray
-          data.selectedPoint = data.selectedPiece.points[data.selectedPiece.points.indexOf(newPoint)]
+          currentPiece.points = finalPointsArray
+          // data.selectedPoint.x = coords.x
+          // data.selectedPoint.y = coords.y
+          currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
+          currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
+          
+          data.selectedPiece = currentPiece
+          data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
+          
           break
         }
         case 0: {// M
           // insert new control point after current point
-          console.log(previousSegmentIndex)
+          let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: data.selectedPiece.id, parent: currentPoint})
           const before = data.selectedPoint
           const finalPointsArray = [before, newPoint, ...after]
           console.log(finalPointsArray)
-          data.selectedPiece.points = finalPointsArray
+          currentPiece.points = finalPointsArray
+          data.selectedPiece = currentPiece
+          // data.selectedPoint.x = coords.x
+          // data.selectedPoint.y = coords.y
+          currentPiece.points.filter(point => point.id == data.selectedPoint.id)[0].x = coords.x
+          currentPiece.points.filter(point => point.id == data.selectedPoint.id)[0].y = coords.y
+          
           data.selectedPoint = data.selectedPiece.points[data.selectedPiece.points.indexOf(newPoint)]
           break
         }
