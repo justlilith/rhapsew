@@ -252,7 +252,7 @@ function handleMousemove (args:HandleMoveArgs) {
       let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
       // console.log(range)
       
-      const after = data.selectedPiece.points.slice(pointIndex)
+      const after = data.selectedPiece.points.slice(pointIndex + 1)
       
       // data.selectedPoint = {...data.selectedPoint, x: coords.x, y: coords.y}
       currentPoint.x = coords.x
@@ -268,7 +268,7 @@ function handleMousemove (args:HandleMoveArgs) {
           // insert new control point with current segment as parent segment after current point
           // const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
           let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint})
-          const before = currentPiece.points.slice(0, previousSegmentIndex + 1)
+          const before = currentPiece.points.slice(0, pointIndex + 1)
           const finalPointsArray = [...before, newPoint, ...after]
           console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
@@ -324,7 +324,8 @@ function initSVGCanvas (data:State) {
     .addTo(data.parent)
     .addClass(`svg`)
     .addClass('rhapsew-element')
-    .viewbox(0,0,1000,100)
+    .viewbox('0 0 1000 100')
+    .size('100%','100%')
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
     
