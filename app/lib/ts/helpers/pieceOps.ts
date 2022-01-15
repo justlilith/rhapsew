@@ -49,9 +49,16 @@ function addPoint (args: AddPointArgs): PointT {
 
   const point = new Point({...coords, active: true, type, id, pieceId, parent})
   
-  if (args.event.shiftKey) {
-    // point.type = "control"
-    point.x = piece.points.slice(-1)[0].x
+  if (event.shiftKey) {
+    let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
+    let slack = 0.1
+    let coords = {x: mousePoint.x, y: mousePoint.y}
+    let ratio = Math.abs(data.selectedPoint.x - coords.x) / Math.abs(data.selectedPoint.y - coords.y)
+        if (ratio > 1) { // horizontal
+          point.y = piece.points.slice(-1)[0].y
+        } else { //vertical
+          point.x = piece.points.slice(-1)[0].x
+        }
     console.log('shift')
   }
   

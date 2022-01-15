@@ -121,7 +121,7 @@ function handleMousedown (args:HandleMouseArgs):State {
       // this area right here, officer
       data = toggleContextMenu({data, state:'off'})
       let points = []
-      data.selectedPoint = null
+      // data.selectedPoint = null
       
       if (data.selectedPiece) {
         console.log("selected piece", data.selectedPiece)
@@ -173,9 +173,20 @@ function handleMousemove (args:HandleMoveArgs) {
   
   if (!data.menu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
+    
     let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
+    let slack = 0.1
+    let coords = {x: mousePoint.x, y: mousePoint.y}
+    if (event.shiftKey) {
+        let ratio = Math.abs(data.selectedPoint.x - coords.x) / Math.abs(data.selectedPoint.y - coords.y)
+        if (ratio > 1) { // horizontal
+          coords = {x: coords.x, y: data.selectedPiece.points.slice(-1)[0].y}
+        } else { //vertical
+          coords = {x: data.selectedPiece.points.slice(-1)[0].x, y: coords.y}
+        }
+    }
     let activeLine = SVG()
-    .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, mousePoint.x + 5, mousePoint.y + 5])
+    .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, coords.x + 5, coords.y + 5])
     .addClass('activeLine')
     .addClass('rhapsew-element')
     .stroke("red")
