@@ -65,8 +65,8 @@ tag app-canvas
 			
 # CSS
 
-css #canvas h:100% flg:100
-global css .svg h:100% w:100%
+css #canvas h:100% flg:100 d:flex fld:column
+global css .svg h:100% w:100% flg:100
 global css .anchor zi:20 pos:relative
 global css .anchor@hover fill:white
 global css .piece zi:10 pos:relative

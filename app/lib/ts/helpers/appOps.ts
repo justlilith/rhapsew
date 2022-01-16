@@ -273,7 +273,7 @@ function handleMousemove (args:HandleMoveArgs) {
       switch (range.length) {
         case 3: // C
         break
-        case 2: // S
+        case 2: // S <- this is the case that hasn't been built yet ^_^
         break
         case 1: {// L
           // insert new control point with current segment as parent segment after current point
@@ -335,8 +335,8 @@ function initSVGCanvas (data:State) {
     .addTo(data.parent)
     .addClass(`svg`)
     .addClass('rhapsew-element')
-    .viewbox('0 0 1000 100')
-    .size('100%','100%')
+    .viewbox('0 0 100 1')
+    // .size('100%','100%')
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
     
