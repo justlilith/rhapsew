@@ -271,11 +271,14 @@ function handleMousemove (args:HandleMoveArgs) {
       currentPiece.points.filter(point => point.id == currentPoint.id)[0] = {...currentPoint, x: coords.x, y: coords.y}
       
       let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint})
-      const before = currentPiece.points.slice(0, pointIndex + 1)
+      let newPairedControlPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint, pairId: newPoint.id})
+      newPoint.pairId = newPairedControlPoint.id
+
+      const before = currentPiece.points.slice(0, pointIndex)
       
       switch (range.length) {
         case 3: {// C
-          const finalPointsArray = [...before, newPoint, ...after]
+          const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
           console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
@@ -283,10 +286,10 @@ function handleMousemove (args:HandleMoveArgs) {
           
           data.selectedPiece = currentPiece
           data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
-        break
+          break
         }
         case 2: {// S <- this is the case that hasn't been built yet ^_^
-          const finalPointsArray = [...before, newPoint, ...after]
+          const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
           console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
@@ -299,7 +302,7 @@ function handleMousemove (args:HandleMoveArgs) {
         case 1: {// L
           // insert new control point with current segment as parent segment after current point
           // const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
-          const finalPointsArray = [...before, newPoint, ...after]
+          const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
           console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
@@ -312,8 +315,7 @@ function handleMousemove (args:HandleMoveArgs) {
         }
         case 0: {// M
           // insert new control point after current point
-          //! DO THIS WHEN  YOU GET BACK
-          const finalPointsArray = [...before, newPoint, ...after]
+          const finalPointsArray = [...before, currentPoint, newPoint, ...after, newPairedControlPoint]
           console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
@@ -327,7 +329,14 @@ function handleMousemove (args:HandleMoveArgs) {
         break
       }
     } else { // "control"
-      
+      //! DO THIS WHEN  YOU GET BACK
+      let pairedPoint = currentPiece.points.filter(point => point.pairId == currentPoint.id)[0]
+      const distanceX = currentPoint.x - currentPoint.parent.x
+      const distanceY = currentPoint.y - currentPoint.parent.y
+      if (pairedPoint) {
+        pairedPoint.x = currentPoint.parent.x - distanceX
+        pairedPoint.y = currentPoint.parent.y - distanceY
+      }
     }
     
   }

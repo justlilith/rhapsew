@@ -29,6 +29,7 @@ interface NewPointArgs {
   id: string
   parent?: PointT
   coords?: {x: number, y: number}
+  pairId?: string
 }
 
 
@@ -38,7 +39,8 @@ interface PointT {
   type: "anchor" | "control"
   active: boolean
   id: string
-  parent?:PointT
+  parent?: PointT
+  pairId?: string
 }
 
 interface EventTarget {
@@ -58,6 +60,7 @@ interface AddPointArgs {
   parent?: PointT
   type?: "control" | "anchor"
   coords?: {x: number, y: number}
+  pairId?: string
 }
 
 interface FindPreviousSegmentArgs {

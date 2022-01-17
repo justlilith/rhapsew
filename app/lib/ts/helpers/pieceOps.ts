@@ -44,10 +44,11 @@ function addPoint (args: AddPointArgs): PointT {
   const parent = args.parent ?? null
   const type = args.type ?? "anchor"
   const coords = args.coords ?? SVG(`svg`).point(args.event.pageX, args.event.pageY)
+  const pairId = args.pairId ?? null
   
   console.log(coords)
 
-  const point = new Point({...coords, active: true, type, id, pieceId, parent})
+  const point = new Point({...coords, active: true, type, id, pieceId, parent, pairId})
   
   if (event.shiftKey) {
     let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
@@ -127,7 +128,7 @@ function renderPiece (args:RenderPieceArgs):void {
         // L
       }
     }
-    
+
     const segment = SVG()
     .path(pathString)
     .data("piece", piece)

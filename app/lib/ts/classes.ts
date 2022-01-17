@@ -27,6 +27,7 @@ class Point {
     this.id = args.id ?? nanoid()
     this.pieceId = args.pieceId
     this.parent ??= args.parent
+    this.pairId = args.pairId ?? null
   }
   x: number
   y: number
@@ -35,6 +36,7 @@ class Point {
   active: boolean
   id: string
   parent?: PointT
+  pairId?: string
 }
 
 export {
