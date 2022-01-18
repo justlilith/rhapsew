@@ -110,24 +110,27 @@ function renderPiece (args:RenderPieceArgs):void {
     if (point.type == "anchor") {
       if (point3 && point1?.type == 'control' && point2?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${point3.x} ${point3.y}`
+        console.log(pathString)
         // C
-      } else if (point3 && point1?.type == 'control' && point2?.type == 'control' && piece.closed) {
+      } else if (point1?.type == 'control' && point2?.type == 'control' && piece.closed) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
+        console.log(pathString)
         // C
       } else if (point2 && point1?.type == 'control' && (point2?.type == 'anchor' || !point3)) {
         pathString += ` S ${point1.x} ${point1.y} ${point2.x} ${point2.y}`
         // S
-      } else if (!point2 && point1?.type == 'control' && piece.closed) {
+      } else if (point1?.type == 'control' && piece.closed) {
         pathString += ` S ${point1.x} ${point1.y} ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
         // S
       } else if (point1 && (point1?.type == "anchor" || !point2)) {
         pathString += ` L ${point1.x} ${point1.y}`
         // L
-      } else if (!point1 && piece.closed) {
+      } else if (piece.closed) {
         pathString += ` L ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
         // L
       }
     }
+
 
     const segment = SVG()
     .path(pathString)
@@ -186,13 +189,14 @@ function renderPiece (args:RenderPieceArgs):void {
     
     if (point.type == 'control') { // C, S
       let parent = data.pieces.filter(p => p.id == piece.id)[0].points.filter(p => p.id == point.parent.id)[0]
-      draw.find(`[data-parent-id="${parent.id}"]`) ? draw.find(`[data-parent-id="${parent.id}"]`).forEach(line => line.remove()) : null
+      draw.find(`[data-control-line-id="${point.id}"]`) ? draw.find(`[data-control-line-id="${point.id}"]`).forEach(line => line.remove()) : null
       let controlPath = [point.x, point.y, parent.x, parent.y]
       
       let controlLine = SVG()
       .line(controlPath)
       .stroke('hsla(240, 100%, 50%, 0.5)')
       .data("parent-id", point.parent.id)
+      .data("control-line-id", point.id)
       .addClass('control-line')
       .addClass('rhapsew-element')
       

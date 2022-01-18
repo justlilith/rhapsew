@@ -359,7 +359,7 @@ function initSVGCanvas (data:State) {
     .addClass(`svg`)
     .addClass('rhapsew-element')
     .viewbox('0 0 100 1')
-    // .size('100%','100%')
+    .size('0in','0in')
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
     

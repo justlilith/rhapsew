@@ -54,9 +54,9 @@ tag app-canvas
 	@mouseup=(do (handleMouseup e))
 	@hotkey('esc')=(do (HistoryManager.append (KeyboardOps.escape {data})))
 	@hotkey('del')=(do (HistoryManager.append (KeyboardOps.deleteKey {data})))
-	@hotkey('ctrl+z')=(do (HistoryManager.undo!))
-	@hotkey('ctrl+shift+z')=(do (HistoryManager.redo!))
-	@hotkey('ctrl+y')=(do (HistoryManager.redo!))
+	@hotkey('ctrl+z')=(do (PieceOps.wipe data; HistoryManager.undo!))
+	@hotkey('ctrl+shift+z')=(do (PieceOps.wipe data; HistoryManager.redo!))
+	@hotkey('ctrl+y')=(do (PieceOps.wipe data; HistoryManager.redo!))
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 
