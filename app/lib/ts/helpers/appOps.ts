@@ -101,7 +101,7 @@ function handleMousedown (args:HandleMouseArgs):State {
   
   
   
-  if (event.target.classList.contains('svg')) {
+  if (event.target.classList.contains('svg') || event.target.classList.contains('spark-guide')) {
     switch (event.button) {
       case 2: // right-click
       data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
@@ -192,11 +192,11 @@ function handleMousemove (args:HandleMoveArgs) {
     draw.add(activeLine)
     
     if (verticalNeighbor) {
-      let sparkGuide = SVG().line([currentCoords.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      let sparkGuide = SVG().line([verticalNeighbor.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
       draw.add(sparkGuide)
     }
     if (horizontalNeighbor) {
-      let sparkGuide = SVG().line([-1500, currentCoords.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      let sparkGuide = SVG().line([-1500, horizontalNeighbor.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
       draw.add(sparkGuide)
     }
   }
