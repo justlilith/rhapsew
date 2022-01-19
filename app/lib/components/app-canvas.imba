@@ -36,7 +36,6 @@ tag app-canvas
 	def handleClick(e\MouseEvent)
 		# console.log e
 		if (e.target.classList.contains('rhapsew-element'))
-			console.log 'clicked'
 			data = (AppOps.handleClick {data, event: e})
 			 
 	def handleMouseup(e\MouseEvent)

@@ -11,8 +11,7 @@ function addPiece (args:PieceArgs):State {
   let data:State = {...args.data}
   let event = args.event
   
-  console.log('adding a new piece')
-  console.log('current pieces', data.pieces)
+  console.info('Rhapsew [Info]: Adding a new piece')
   
   let newPiece:PieceT = {points: [], name: "test", closed: false, id: nanoid()} // wait nvm
   newPiece.points[0] = addPoint({data, event, pieceId: newPiece.id}) // trying this out
@@ -25,11 +24,6 @@ function addPiece (args:PieceArgs):State {
   // data.selectedPiece = data.pieces.slice(-1)[0]
   data.selectedPoint = data.selectedPiece.points[0]
   console.info(`Rhapsew [Info]: New piece added: ${data.selectedPiece.id}`)
-  console.info("selected piece", data.selectedPiece)
-  console.log('pieces', data.pieces)
-  for (let piece of data.pieces) {
-    console.log('piece', piece)
-  }
   
   return data
 }
@@ -46,7 +40,7 @@ function addPoint (args: AddPointArgs): PointT {
   const coords = args.coords ?? SVG(`svg`).point(args.event.pageX, args.event.pageY)
   const pairId = args.pairId ?? null
   
-  console.log(coords)
+  console.info(`Rhapsew [Info]: Adding a new point . . .`)
 
   const point = new Point({...coords, active: true, type, id, pieceId, parent, pairId})
   
@@ -60,7 +54,6 @@ function addPoint (args: AddPointArgs): PointT {
         } else { //vertical
           point.x = piece.points.slice(-1)[0].x
         }
-    console.log('shift')
   }
   
   console.info(`Rhapsew [Info]: New point: ${point.id}`)
@@ -110,11 +103,9 @@ function renderPiece (args:RenderPieceArgs):void {
     if (point.type == "anchor") {
       if (point3 && point1?.type == 'control' && point2?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${point3.x} ${point3.y}`
-        console.log(pathString)
         // C
       } else if (point1?.type == 'control' && point2?.type == 'control' && piece.closed) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
-        console.log(pathString)
         // C
       } else if (point2 && point1?.type == 'control' && (point2?.type == 'anchor' || !point3)) {
         pathString += ` S ${point1.x} ${point1.y} ${point2.x} ${point2.y}`

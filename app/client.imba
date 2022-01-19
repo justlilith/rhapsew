@@ -24,8 +24,7 @@ History.set state
 # History.limit 1000
 History.subscribe do(e)
 	state = e.detail
-	console.log state
-	console.log state.pieces..[0]
+	# console.log state
 
 tag app
 	<self.app.{state.currentTheme}>

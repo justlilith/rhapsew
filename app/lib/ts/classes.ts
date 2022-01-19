@@ -4,12 +4,9 @@ import * as PieceOps from './helpers/pieceOps'
 
 class Piece {
   constructor(args:PieceArgs) {
-    console.log("new piece args", args)
     const id = nanoid()
     this.id = id
     this.points = []
-    // this.points = [PieceOps.addPoint({data: args.data, event: args.event, index: 0, pieceId: id})] // issue pt 2 <- probably due to this
-    // this.points = [new Point({x:0, y:0, active: true, id, index: 0, pieceId: id})]
     this.closed = false
   }
   points: PointT[]

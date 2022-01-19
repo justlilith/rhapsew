@@ -60,9 +60,6 @@ function handleClick (args:HandleClickArgs):State {
   
   let draw = initSVGCanvas(data)
   
-  console.log(event)
-  console.log("data!!", data)
-  
   return data
 }
 
@@ -77,16 +74,12 @@ function handleMousedown (args:HandleMouseArgs):State {
   let draw = initSVGCanvas(data)
   
   console.info(`Rhapsew [Info]: Mousedown`)
-  console.log(data?.pieces)
-  console.log(data?.selectedPiece?.points)
-  console.log(event)
   
   
   if (event.target.classList.contains(`anchor`)) {
     let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
     let id = domPoint.id
     let pieceId: string = event.target.getAttribute('data-pieceId')
-    console.log(data.pieces)
     
     data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
     data.selectedPoint = domPoint
@@ -96,8 +89,6 @@ function handleMousedown (args:HandleMouseArgs):State {
     console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
     console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
     
-    console.log(data.selectedPiece.points[0].id)
-    console.log(data.selectedPiece.points.length)
     if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
       data.selectedPiece.closed = true
       console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
@@ -124,7 +115,6 @@ function handleMousedown (args:HandleMouseArgs):State {
       // data.selectedPoint = null
       
       if (data.selectedPiece) {
-        console.log("selected piece", data.selectedPiece)
         if (!data.selectedPiece.closed) {
           const newPoint = PieceOps.addPoint({...args, pieceId: data.selectedPiece.id})
           // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
@@ -141,7 +131,6 @@ function handleMousedown (args:HandleMouseArgs):State {
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
           })
-          console.log("clicked")
         }
       } else {
         data.selectedPiece = null
@@ -159,6 +148,9 @@ function handleMousedown (args:HandleMouseArgs):State {
 function handleMouseup (args:HandleMouseArgs):State {
   let data = args.data
   let event = args.event
+  let draw = initSVGCanvas(data)
+  
+  draw.find('.spark-guide').forEach(element => element.remove())
   
   data.moving = false
   return data  
@@ -170,13 +162,19 @@ function handleMousemove (args:HandleMoveArgs) {
   let event = args.event
   
   let draw = initSVGCanvas(data)
+  const slack = 5
+  const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
+  const allPoints = data.pieces.map(piece => piece.points).flat()
+  const verticalNeighbor = allPoints.filter(point => point.x + slack >= currentCoords.x && point.x - slack <= currentCoords.x && point.id != data.selectedPoint.id)[0]
+  const horizontalNeighbor = allPoints.filter(point => point.y + slack >= currentCoords.y && point.y - slack <= currentCoords.y && point.id != data.selectedPoint.id)[0]
+  
+  draw.find('.spark-guide').forEach(element => element.remove())
   
   if (!data.menu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
+    draw.find('.spark-guide').forEach(element => element.remove())
     
-    let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
-    let slack = 0.1
-    let coords = {x: mousePoint.x, y: mousePoint.y}
+    let coords = {x: verticalNeighbor?.x ?? currentCoords.x, y: horizontalNeighbor?.y ?? currentCoords.y}
     if (event.shiftKey) {
       let ratio = Math.abs(data.selectedPoint.x - coords.x) / Math.abs(data.selectedPoint.y - coords.y)
       if (ratio > 1) { // horizontal
@@ -192,14 +190,33 @@ function handleMousemove (args:HandleMoveArgs) {
     .stroke("red")
     
     draw.add(activeLine)
+    
+    if (verticalNeighbor) {
+      let sparkGuide = SVG().line([currentCoords.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      draw.add(sparkGuide)
+    }
+    if (horizontalNeighbor) {
+      let sparkGuide = SVG().line([-1500, currentCoords.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      draw.add(sparkGuide)
+    }
   }
   
   if (data.selectedPoint && data.moving) {
     let id = data.selectedPoint.id
     data.selectedPiece.points = data.selectedPiece.points.map(point => {
       if (point.id == id) {
-        point.x = SVG(`svg`).point(event.clientX, event.clientY).x
-        point.y = SVG(`svg`).point(event.clientX, event.clientY).y
+        point.x = verticalNeighbor?.x ?? currentCoords.x
+        point.y = horizontalNeighbor?.y ?? currentCoords.y
+        draw.find('.spark-guide').forEach(element => element.remove())
+        
+        if (verticalNeighbor) {
+          let sparkGuide = SVG().line([currentCoords.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+          draw.add(sparkGuide)
+        }
+        if (horizontalNeighbor) {
+          let sparkGuide = SVG().line([-1500, currentCoords.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+          draw.add(sparkGuide)
+        } 
       }
       return point
     })
@@ -252,16 +269,12 @@ function handleMousemove (args:HandleMoveArgs) {
     .points
     .filter(point => point.id == currentPoint.id)[0];
     
-    console.log(HistoryManager.previous())
     const coords = {x: previousPositionPoint?.x, y: previousPositionPoint?.y}
     
-    console.log("previous position", previousPositionPoint)
-    console.log("current position", data.selectedPoint)
     if (currentPoint.type == "anchor") {
       
       // range.length /* 1 or 2 */ 
       let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
-      console.log(range)
       
       const after = data.selectedPiece.points.slice(pointIndex + 1)
       
@@ -273,13 +286,12 @@ function handleMousemove (args:HandleMoveArgs) {
       let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint})
       let newPairedControlPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint, pairId: newPoint.id})
       newPoint.pairId = newPairedControlPoint.id
-
+      
       const before = currentPiece.points.slice(0, pointIndex)
       
       switch (range.length) {
         case 3: {// C
           const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
-          console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
@@ -290,7 +302,6 @@ function handleMousemove (args:HandleMoveArgs) {
         }
         case 2: {// S <- this is the case that hasn't been built yet ^_^
           const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
-          console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
@@ -303,7 +314,6 @@ function handleMousemove (args:HandleMoveArgs) {
           // insert new control point with current segment as parent segment after current point
           // const before = data.selectedPiece.points.slice(previousSegmentIndex, previousSegmentIndex + 1)
           const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
-          console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
@@ -316,7 +326,6 @@ function handleMousemove (args:HandleMoveArgs) {
         case 0: {// M
           // insert new control point after current point
           const finalPointsArray = [...before, currentPoint, newPoint, ...after, newPairedControlPoint]
-          console.log(finalPointsArray)
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
@@ -329,7 +338,6 @@ function handleMousemove (args:HandleMoveArgs) {
         break
       }
     } else { // "control"
-      //! DO THIS WHEN  YOU GET BACK
       let pairedPoint = currentPiece.points.filter(point => point.pairId == currentPoint.id)[0]
       const distanceX = currentPoint.x - currentPoint.parent.x
       const distanceY = currentPoint.y - currentPoint.parent.y
@@ -370,8 +378,6 @@ function initSVGCanvas (data:State) {
       window.dispatchEvent(new CustomEvent('rhapsewZoom', event))
       
     })
-    // window.addEventListener('rhapsewZoom', e => console.log("whoa", e))
-    
   }
   return draw
 }

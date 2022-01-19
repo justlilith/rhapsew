@@ -12,8 +12,6 @@ def shallowCopy data
 def append data
 	if history[current-index + 1]
 		history = history.slice 0, current-index + 1
-	console.log "appending"
-	console.log JSON.stringify(shallowCopy (history.slice -1)[0])
 	if history-limit && history.length == history-limit
 		history.shift!
 	history.push data

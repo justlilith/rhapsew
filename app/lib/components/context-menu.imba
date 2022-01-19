@@ -6,12 +6,9 @@ import * as AppOps from '$lib/ts/helpers/appOps'
 tag context-menu
 	prop data
 	def mount
-		console.log "menu mounted"
-		console.log data
+		console.info "Rhapsew [Info]: Menu mounted"
 
 	def addPiece(event)
-		for piece of data.pieces
-			console.log piece
 		data = PieceOps.addPiece {data, event}
 		HistoryManager.append (AppOps.toggleContextMenu {data, state: 'off'})
 	
