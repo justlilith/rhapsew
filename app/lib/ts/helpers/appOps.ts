@@ -165,8 +165,8 @@ function handleMousemove (args:HandleMoveArgs) {
   const slack = 5
   const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
   const allPoints = data.pieces.map(piece => piece.points).flat()
-  const verticalNeighbor = allPoints.filter(point => point.x + slack >= currentCoords.x && point.x - slack <= currentCoords.x && point.id != data.selectedPoint.id)[0]
-  const horizontalNeighbor = allPoints.filter(point => point.y + slack >= currentCoords.y && point.y - slack <= currentCoords.y && point.id != data.selectedPoint.id)[0]
+  const verticalNeighbor = allPoints.filter(point => point.x + slack >= currentCoords.x && point.x - slack <= currentCoords.x && point.id != data.selectedPoint?.id)[0]
+  const horizontalNeighbor = allPoints.filter(point => point.y + slack >= currentCoords.y && point.y - slack <= currentCoords.y && point.id != data.selectedPoint?.id)[0]
   
   draw.find('.spark-guide').forEach(element => element.remove())
   
