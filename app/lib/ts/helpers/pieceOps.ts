@@ -200,8 +200,7 @@ function renderPiece (args:RenderPieceArgs):void {
     if (domSegment) {
       if (!_.isEqual(AppOps.shallowCopy(domSegment.data("piece")), AppOps.shallowCopy(piece))){
         console.info(`Rhapsew [Info]: Rerendering piece: ${piece.id}`)
-        draw.find('.segment').forEach(element => element.remove())
-        draw.find('.segment-wrangler').forEach(element => element.remove())
+        draw.find('.rhapsew-element').forEach(element => element.remove())
         draw.add(segment)
         draw.add(segmentWrangler)
         piece.points.forEach(point => {

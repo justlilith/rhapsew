@@ -53,14 +53,23 @@ function exportSvg (args) {
   document.body.removeChild(download)
 }
 
-function handleClick (args:HandleClickArgs):State {
+function handleClick (args:HandleClickArgs):{data:State, changed:boolean} {
   let data= args.data
   let event= args.event
+  let changed = false
   const id = event.target.getAttribute('data-id') ?? null
+  const type = (JSON.parse(event.target.getAttribute('data-point')) as PointT)?.type ?? null
+  const point = (JSON.parse(event.target.getAttribute('data-point')) as PointT) ?? null
   
   let draw = initSVGCanvas(data)
+
+  if (event.ctrlKey && type == 'control') {
+    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = data.selectedPiece.points.filter(point => point.id != id)
+    data.selectedPiece.points = data.selectedPiece.points.filter(point => point.id != id)
+    changed = true
+  }
   
-  return data
+  return {data, changed}
 }
 
 interface HandleMouseArgs {
@@ -267,7 +276,7 @@ function handleMousemove (args:HandleMoveArgs) {
     const previousPositionPoint = (HistoryManager.previous() as State)
     .selectedPiece
     .points
-    .filter(point => point.id == currentPoint.id)[0];
+    .filter(point => point.id == currentPoint?.id)[0];
     
     const coords = {x: previousPositionPoint?.x, y: previousPositionPoint?.y}
     
