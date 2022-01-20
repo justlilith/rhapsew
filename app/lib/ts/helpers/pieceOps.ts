@@ -156,7 +156,8 @@ function renderPiece (args:RenderPieceArgs):void {
     })
     .on('mouseover', (event:MouseEvent) => {
       let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
-      let length = segment.length().toPrecision(5).toString()
+      let suffix = data.units == "imperial" ? "in" : "cm"
+      let length = (segment.length() / data.dpi).toPrecision(5).toString() + suffix
       
       let text = SVG()
       .text(length)
@@ -164,7 +165,7 @@ function renderPiece (args:RenderPieceArgs):void {
       .font({
         family: 'sans-serif'
         , size: 12
-        , anchor: "left"
+        , anchor: 'left'
       })
       .addClass('hover-measure')
       .addClass('rhapsew-element')

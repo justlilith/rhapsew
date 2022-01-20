@@ -2,10 +2,12 @@ interface State {
   currentTheme: string
   units: string
   zoom: number
+  dpi: number
   pieces: PieceT[]
   status: string
   parent: string
   menu: boolean
+  settingsMenu: boolean
   selectedPiece: PieceT|null
   selectedPoint: PointT|null
   menuX: number|null

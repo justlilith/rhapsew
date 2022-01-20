@@ -27,7 +27,7 @@ function exportSvg (args) {
   const data = args.data
   let draw = initSVGCanvas(data)
   let output = draw.svg((node:Element) => {
-    if (node.hasClass('segment-wrangler') || node.hasClass('anchor')) {
+    if (node.hasClass('segment-wrangler') || node.hasClass('anchor') || node.hasClass('selection-box')) {
       return false
     }
     if (node.hasClass('piece')) {
@@ -367,7 +367,7 @@ function initSVGCanvas (data:State) {
     .addClass(`svg`)
     .addClass('rhapsew-element')
     .viewbox('0 0 100 1')
-    .size('0in','0in')
+    // .size('100','100')
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
     

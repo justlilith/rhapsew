@@ -26,7 +26,7 @@ tag app-top-bar
 				<button>
 					<span.material-icons-outlined> "file_download"
 					<span> "Export"
-			<div.menu-item>
+			<div.menu-item @click=(do (data.settingsMenu = !data.settingsMenu))>
 				<button>
 					<span.material-icons-outlined> "settings"
 					<span> "Settings"
@@ -37,7 +37,7 @@ tag app-top-bar
 
 # CSS
 
-css .self c:gray4 bg:black d:flex p:0.5em fld:row h:30px j:flex-start ai:center
+css .self c:gray4 bg:black d:flex p:0.5em fld:row h:30px j:flex-start ai:center zi:100 pos:relative
 	.logo fs:1.5em c:white
 	.logo@after content:" (rɑːp-soʊ)" fs:.625em va:top c:gray7
 	.logo@hover@after content:" (rɑːp-soʊ)" fs:.625em va:top c:white
