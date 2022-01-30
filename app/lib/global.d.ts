@@ -1,5 +1,6 @@
 interface State {
   currentTheme: string
+  currentCoords: {x: number, y: number}
   units: string
   zoom: number
   dpi: number
@@ -12,7 +13,9 @@ interface State {
   selectedPoint: PointT|null
   menuX: number|null
   menuY: number|null
+  mousedown: boolean
   moving: boolean
+  panning: boolean
 }
 
 interface PieceT {
@@ -87,6 +90,11 @@ interface HandleMouseArgs {
 interface HandleMoveArgs {
   data: State
   event: MouseEvent
+}
+
+interface PanArgs {
+  data: State
+  currentCoords: {x: number, y: number}
 }
 
 interface PieceArgs {

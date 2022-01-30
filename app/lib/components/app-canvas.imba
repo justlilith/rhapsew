@@ -43,6 +43,7 @@ tag app-canvas
 			 
 	def handleMouseup(e\MouseEvent)
 		# console.log e
+		data.panning = false
 		if (e.target.classList.contains('rhapsew-element'))
 			HistoryManager.append (AppOps.handleMouseup {data, event: e})
 
@@ -59,6 +60,7 @@ tag app-canvas
 	@hotkey('ctrl+z')=(do (PieceOps.wipe data; HistoryManager.undo!))
 	@hotkey('ctrl+shift+z')=(do (PieceOps.wipe data; HistoryManager.redo!))
 	@hotkey('ctrl+y')=(do (PieceOps.wipe data; HistoryManager.redo!))
+	@hotkey('space').repeat=(do (if data.mousedown then data.panning = true))
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 

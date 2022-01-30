@@ -8,6 +8,7 @@ import * as History from '$lib/ts/helpers/HistoryManager'
 let state\State =
 	{
 		currentTheme: 'dark'
+		currentCoords: null
 		units: 'imperial'
 		zoom: 1
 		dpi: 96
@@ -20,7 +21,9 @@ let state\State =
 		selectedPoint: null
 		menuX: null
 		menuY: null
+		mousedown: false
 		moving: null
+		panning: false
 	}
 
 History.set state

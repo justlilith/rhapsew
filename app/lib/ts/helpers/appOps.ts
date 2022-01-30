@@ -72,10 +72,6 @@ function handleClick (args:HandleClickArgs):{data:State, changed:boolean} {
   return {data, changed}
 }
 
-interface HandleMouseArgs {
-  data: State
-  event: MouseEvent
-}
 
 function handleMousedown (args:HandleMouseArgs):State {
   let data = args.data
@@ -83,7 +79,7 @@ function handleMousedown (args:HandleMouseArgs):State {
   let draw = initSVGCanvas(data)
   
   console.info(`Rhapsew [Info]: Mousedown`)
-  
+  data.mousedown = true
   
   if (event.target.classList.contains(`anchor`)) {
     let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
@@ -154,6 +150,7 @@ function handleMousedown (args:HandleMouseArgs):State {
   return data
 }
 
+
 function handleMouseup (args:HandleMouseArgs):State {
   let data = args.data
   let event = args.event
@@ -162,6 +159,7 @@ function handleMouseup (args:HandleMouseArgs):State {
   draw.find('.spark-guide').forEach(element => element.remove())
   
   data.moving = false
+  data.mousedown = false
   return data  
 }
 
@@ -231,7 +229,7 @@ function handleMousemove (args:HandleMoveArgs) {
     })
   }
   
-  if (event.ctrlKey && data.selectedPoint) {
+  if (event.ctrlKey && data.selectedPoint && event.button == 0) {
     // data.selectedPiece.points
     /* 
     * How do you wanna do this?
@@ -358,6 +356,12 @@ function handleMousemove (args:HandleMoveArgs) {
     
   }
   
+  if (data.panning && data.mousedown && event.buttons == 1) {
+    pan({currentCoords: {x:event.clientX, y: event.clientY}, data})
+    // data.panning = false
+  }
+
+  data.currentCoords = {x:event.clientX, y: event.clientY}
   return data
 }
 
@@ -368,7 +372,7 @@ function init (data) {
   })
 }
 
-function initSVGCanvas (data:State) {
+function initSVGCanvas (data:State):Element {
   let draw = SVG(`svg`)
   if (!draw) {
     draw = SVG()
@@ -379,6 +383,7 @@ function initSVGCanvas (data:State) {
     // .size('100','100')
     .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
     .zoom(1)
+    // .animate()
     
     draw.on('zoom', (event) => {
       // console.log(event)
@@ -389,6 +394,17 @@ function initSVGCanvas (data:State) {
     })
   }
   return draw
+}
+
+function pan(args:PanArgs) {
+  let data = args.data
+  let currentCoords = args.currentCoords
+  let draw = initSVGCanvas(args.data)
+  let viewBox:string = draw.attr('viewBox')
+  let viewBoxArray = viewBox.split(' ').map(coord => parseInt(coord))
+  viewBoxArray[0] = viewBoxArray[0] + data.currentCoords.x - currentCoords.x
+  viewBoxArray[1] = viewBoxArray[1] + data.currentCoords.y - currentCoords.y
+  draw.attr('viewBox', viewBoxArray.join(' '))
 }
 
 function shallowCopy (arg) {
@@ -422,6 +438,7 @@ export {
   , handleMousemove
   , init
   , initSVGCanvas
+  , pan
   , shallowCopy
   , toggleContextMenu
   , writeToStatus
