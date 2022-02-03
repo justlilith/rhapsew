@@ -85,6 +85,37 @@ function findPreviousSegment(args: FindPreviousSegmentArgs): PointT {
 }
 
 
+function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
+  let data = args.data
+  let renderedPiece = args.piece
+  let id = args.pieceId
+  const draw = AppOps.initSVGCanvas(data)
+  let piece = draw.find(`[data-piece-id="${id}"]`)?.[0]
+
+  // let box = draw.find(`.bounding-box`)
+  // let box = renderedPiece.find(`.bounding-box`)
+  // let box = renderedPiece.find(`[data-bounding-box-id="${piece.id}"]`)
+  if (id == data?.selectedPiece?.id) {
+    let bbox = renderedPiece.bbox()
+    let extents = Utilities.findExtents({ data, piece: renderedPiece })
+    const boundingBox = SVG()
+      .rect(bbox.w, bbox.h)
+      .x(extents.x)
+      .y(extents.y)
+      .stroke({
+        color: 'white',
+        width: 1
+      })
+      .fill('none')
+      .data('bounding-box-id', id)
+      .addClass('bounding-box')
+    renderedPiece.add(boundingBox)
+  }
+
+  return renderedPiece
+}
+
+
 function generatePiece(args: GeneratePieceArgs): G {
   let data = args.data
   let piece = args.piece
@@ -205,6 +236,8 @@ function generatePiece(args: GeneratePieceArgs): G {
       if (!_.isEqual(AppOps.shallowCopy(domSegment.data("piece")), AppOps.shallowCopy(piece))) {
         console.info(`Rhapsew [Info]: Rerendering piece: ${piece.id}`)
         draw.find('.rhapsew-element').forEach(element => element.remove())
+        let box = draw.find(`[data-bounding-box-id="${piece.id}"]`)
+        box ? box.forEach(el => el.remove()) : null
         renderedPiece.add(segment)
         renderedPiece.add(segmentWrangler)
         // piece.points.forEach(point => {
@@ -224,6 +257,7 @@ function generatePiece(args: GeneratePieceArgs): G {
   return renderedPiece
 }
 
+
 function renderPiece(args: RenderPieceArgs): void {
   let data = args.data
   let piece = args.piece
@@ -231,22 +265,23 @@ function renderPiece(args: RenderPieceArgs): void {
   const draw = AppOps.initSVGCanvas(data)
 
   data = setMirrorLine({ data, piece })
-  const renderedPiece = generatePiece({ data, piece })
-  draw.add(renderedPiece)
-
+  let renderedPiece = generatePiece({ data, piece })
+  
   piece.points.forEach(point => {
     renderPoint({ id: point.id, data, point, piece })
   })
-  
+
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
     const rotateValue = Utilities.findAngle({ mode: 'horizontal', point1: piece.mirrorLine[0], point2: piece.mirrorLine[1] })
-    const mirroredPiece = SVG().use(renderedPiece).transform({
+    const mirroredPiece = renderedPiece.clone().transform({
       flip: 'x'
       , origin: { x: piece.mirrorLine[0].x, y: piece.mirrorLine[0].y }
       , rotate: rotateValue * -2
     })
-    draw.add(mirroredPiece)
+    renderedPiece.add(mirroredPiece)
   }
+  renderedPiece = generateBoundingBox({ data, piece: renderedPiece, pieceId: piece.id })
+  draw.add(renderedPiece)
 
 
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
@@ -314,7 +349,7 @@ function renderPoint(args: RenderPointArgs): void {
   }
 }
 
-function setMirrorLine(args:SetMirrorLineArgs) {
+function setMirrorLine(args: SetMirrorLineArgs) {
   let data: State = args.data
   let event: Event = args.event
   let piece = args.piece

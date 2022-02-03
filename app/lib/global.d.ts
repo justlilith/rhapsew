@@ -82,6 +82,12 @@ interface FindPreviousSegmentArgs {
   point: PointT
 }
 
+interface GenerateBoundingBoxArgs {
+  data: State
+  piece: import("@svgdotjs/svg.js").G
+  pieceId: string
+}
+
 interface GeneratePieceArgs {
   data: State
   piece: PieceT

@@ -1,3 +1,7 @@
+import * as AppOps from '$lib/ts/helpers/appOps'
+import type { G } from '@svgdotjs/svg.js'
+
+
 function findAngle(args: FindAngleArgs): number {
   const x1: number = args.point2.x - args.point1.x
   const y1: number = args.point2.y - args.point1.y
@@ -19,6 +23,13 @@ function findAngle(args: FindAngleArgs): number {
   return angle
 }
 
+function findExtents(args) {
+  let data: State = args.data
+  let piece: G = args.piece
+  return { x: piece.x(), y: piece.y(), width: piece.width(), height: piece.height() }
+}
+
 export {
   findAngle
+  , findExtents
 }
