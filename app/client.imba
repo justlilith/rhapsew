@@ -7,6 +7,8 @@ import * as History from '$lib/ts/helpers/HistoryManager'
 
 let state\State =
 	{
+		anchorClicked: false
+		canvasClicked: false
 		currentTheme: 'dark'
 		currentCoords: null
 		units: 'imperial'
@@ -36,7 +38,7 @@ tag app
 	<self.app.{state.currentTheme}>
 		<header>
 			<app-top-bar bind=state>
-			if state.settingsMenu
+			if state..settingsMenu
 				<settings-menu[y@in:-300px y@out:-500px] bind=state ease>
 		<section.content>
 			<app-canvas bind=state>

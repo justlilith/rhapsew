@@ -8,18 +8,39 @@ tag context-menu
 	def mount
 		console.info "Rhapsew [Info]: Menu mounted"
 
-	def addPiece(event)
+	def addPiece event
 		data = PieceOps.addPiece {data, event}
+		HistoryManager.append (AppOps.toggleContextMenu {data, state: 'off'})
+
+	def removeMirrorLine(event)
+		let resetPoint = data.selectedPoint
+		data = PieceOps.setMirrorLine {data, event, piece: data.selectedPiece, resetPoint, clear: true}
+		HistoryManager.append (AppOps.toggleContextMenu {data, state: 'off'})
+
+	def setMirrorLine(event)
+		let resetPoint = data.selectedPoint
+		data = PieceOps.setMirrorLine {data, event, piece: data.selectedPiece, resetPoint}
 		HistoryManager.append (AppOps.toggleContextMenu {data, state: 'off'})
 	
 	# def deletePiece
 
 	<self.context-menu[opacity@off:0 ease:0.25s] ease>
-		if data
+		if data..canvasClicked
 			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
 				<div.menu-item>
 					<span.material-icons-outlined> "checkroom"
 					<span @click=(addPiece e)> "New Piece"
+		if data..anchorClicked
+			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
+				<div.menu-item>
+					<span.material-icons-outlined> "align_horizontal_center"
+					if data.selectedPiece.mirrorLine.length == 0 || data.selectedPiece.mirrorLine[1]
+						<span @click=(setMirrorLine e)> "Set Mirror Line (Point 1)"
+					else
+						<span @click=(setMirrorLine e)> "Set Mirror Line (Point 2)"
+				<div.menu-item>
+					<span.material-icons-outlined> "align_horizontal_center"
+						<span @click=(removeMirrorLine e)> "Remove Mirror Line"
 			
 		# <span @click=(do PieceOps.removePiece)> "Delete Piece"
 

@@ -8,11 +8,13 @@ class Piece {
     this.id = id
     this.points = []
     this.closed = false
+    this.mirrorLine = []
   }
   points: PointT[]
   name: string = "init"
   closed: boolean
   id: string
+  mirrorLine: PointT[]
 }
 
 class Point {

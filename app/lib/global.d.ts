@@ -1,4 +1,6 @@
 interface State {
+  anchorClicked: boolean
+  canvasClicked: boolean
   currentTheme: string
   currentCoords: {x: number, y: number}
   units: string
@@ -23,6 +25,7 @@ interface PieceT {
   name: string
   closed: boolean
   id: string
+  mirrorLine: PointT[]
 }
 
 interface NewPointArgs {
@@ -68,9 +71,21 @@ interface AddPointArgs {
   pairId?: string
 }
 
+interface FindAngleArgs {
+  mode: string
+  point1: PointT
+  point2: PointT
+}
+
 interface FindPreviousSegmentArgs {
   data: State
   point: PointT
+}
+
+interface GeneratePieceArgs {
+  data: State
+  piece: PieceT
+  mirrored?: boolean
 }
 
 interface HandleClickArgs {
@@ -112,4 +127,12 @@ interface RenderPointArgs {
   data: State
   point: PointT
   piece: PieceT
+}
+
+interface SetMirrorLineArgs {
+  data: State
+  piece?: PieceT
+  event?: Event
+  resetPoint?: PointT
+  clear?: boolean
 }

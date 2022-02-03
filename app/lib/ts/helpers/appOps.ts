@@ -62,7 +62,7 @@ function handleClick (args:HandleClickArgs):{data:State, changed:boolean} {
   const point = (JSON.parse(event.target.getAttribute('data-point')) as PointT) ?? null
   
   let draw = initSVGCanvas(data)
-
+  
   if (event.ctrlKey && type == 'control') {
     data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = data.selectedPiece.points.filter(point => point.id != id)
     data.selectedPiece.points = data.selectedPiece.points.filter(point => point.id != id)
@@ -82,31 +82,54 @@ function handleMousedown (args:HandleMouseArgs):State {
   data.mousedown = true
   
   if (event.target.classList.contains(`anchor`)) {
-    let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
-    let id = domPoint.id
-    let pieceId: string = event.target.getAttribute('data-pieceId')
-    
-    data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
-    data.selectedPoint = domPoint
-    data.moving = true
-    
-    console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
-    console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
-    console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
-    
-    if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
-      data.selectedPiece.closed = true
-      console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
+    switch (event.button) {
+      case 2: {
+        data.anchorClicked = true
+        data.canvasClicked = false
+        data = toggleContextMenu({data, state: 'on', x: event.clientX, y: event.clientY})
+        draw.find('.activeLine').forEach(element => element.remove())
+        let pieceId: string = event.target.getAttribute('data-pieceId')
+        let point:PointT = JSON.parse(event.target.getAttribute('data-point'))
+        data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
+        data.selectedPoint = data.pieces.filter(piece => piece.id == pieceId)[0].points.filter(p => p.id == point.id)[0]
+        break
+      }
+      case 0:
+        default: {
+        data.canvasClicked = true
+        data.anchorClicked = false
+        data = toggleContextMenu({data, state: 'off', x: event.clientX, y: event.clientY})
+        draw.find('.activeLine').forEach(element => element.remove())
+        
+        let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
+        let id = domPoint.id
+        let pieceId: string = event.target.getAttribute('data-pieceId')
+        
+        data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
+        data.selectedPoint = domPoint
+        data.moving = true
+        
+        console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
+        console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
+        console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
+        
+        if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
+          data.selectedPiece.closed = true
+          console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
+        }
+        
+        draw.find('.activeLine').forEach(element => element.remove())
+        data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points.forEach(point => point.id == id ? point.active = true : point.active = false)
+        data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
+      }
     }
-    
-    draw.find('.activeLine').forEach(element => element.remove())
-    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points.forEach(point => point.id == id ? point.active = true : point.active = false)
-    data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
   }
   
   
   
   if (event.target.classList.contains('svg') || event.target.classList.contains('spark-guide')) {
+    data.canvasClicked = true
+    data.anchorClicked = false
     switch (event.button) {
       case 2: // right-click
       data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
@@ -360,7 +383,7 @@ function handleMousemove (args:HandleMoveArgs) {
     pan({currentCoords: {x:event.clientX, y: event.clientY}, data})
     // data.panning = false
   }
-
+  
   data.currentCoords = {x:event.clientX, y: event.clientY}
   return data
 }
