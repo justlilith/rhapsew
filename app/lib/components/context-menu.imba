@@ -40,7 +40,7 @@ tag context-menu
 						<span @click=(setMirrorLine e)> "Set Mirror Line (Point 2)"
 				<div.menu-item>
 					<span.material-icons-outlined> "align_horizontal_center"
-						<span @click=(removeMirrorLine e)> "Remove Mirror Line"
+					<span @click=(removeMirrorLine e)> "Remove Mirror Line"
 			
 		# <span @click=(do PieceOps.removePiece)> "Delete Piece"
 
