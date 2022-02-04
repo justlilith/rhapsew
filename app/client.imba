@@ -4,6 +4,7 @@ import app-top-bar from '$lib/components/app-top-bar'
 import settings-menu from '$lib/components/settings-menu'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import * as History from '$lib/ts/helpers/HistoryManager'
+import * as Utilities from '$lib/ts/helpers/utilities'
 
 let state\State =
 	{
@@ -33,8 +34,13 @@ History.set state
 History.subscribe do(e)
 	state = e.detail
 	# console.log state
+	Utilities.saveToStorage { key: 'data', value: state}
 
 tag app
+	def mount
+		let test = Utilities.fetchFromStorage 'data'
+		test.error ? console.log(test.error) : state = test.fetched
+
 	<self.app.{state.currentTheme}>
 		<header>
 			<app-top-bar bind=state>
