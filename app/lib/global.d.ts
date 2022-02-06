@@ -1,31 +1,33 @@
 interface State {
   anchorClicked: boolean
   canvasClicked: boolean
+  currentCoords: { x: number, y: number }
   currentTheme: string
-  currentCoords: {x: number, y: number}
-  units: string
-  zoom: number
   dpi: number
-  pieces: PieceT[]
-  status: string
-  parent: string
   menu: boolean
-  settingsMenu: boolean
-  selectedPiece: PieceT|null
-  selectedPoint: PointT|null
-  menuX: number|null
-  menuY: number|null
+  menuX: number | null
+  menuY: number | null
   mousedown: boolean
   moving: boolean
   panning: boolean
+  parent: string
+  pieceMoving: boolean
+  pieces: PieceT[]
+  selectedPiece: PieceT | null
+  selectedPoint: PointT | null
+  settingsMenu: boolean
+  status: string
+  units: string
+  zoom: number
 }
 
 interface PieceT {
-  points: PointT[]
-  name: string
   closed: boolean
   id: string
   mirrorLine: PointT[]
+  offset: { x: number, y: number }
+  name: string
+  points: PointT[]
 }
 
 interface NewPointArgs {
@@ -36,8 +38,9 @@ interface NewPointArgs {
   active?: boolean
   id: string
   parent?: PointT
-  coords?: {x: number, y: number}
+  coords?: { x: number, y: number }
   pairId?: string
+  offset?: { x: number, y: number }
 }
 
 
@@ -49,10 +52,11 @@ interface PointT {
   id: string
   parent?: PointT
   pairId?: string
+  offset: { x: number, y: number }
 }
 
 interface EventTarget {
-  getAttribute(x:string)
+  getAttribute(x: string)
   classList: DOMTokenList
 }
 
@@ -67,7 +71,7 @@ interface AddPointArgs {
   pieceId: string
   parent?: PointT
   type?: "control" | "anchor"
-  coords?: {x: number, y: number}
+  coords?: { x: number, y: number }
   pairId?: string
 }
 
@@ -115,7 +119,7 @@ interface HandleMoveArgs {
 
 interface PanArgs {
   data: State
-  currentCoords: {x: number, y: number}
+  currentCoords: { x: number, y: number }
 }
 
 interface PieceArgs {
@@ -125,7 +129,7 @@ interface PieceArgs {
 
 interface RenderPieceArgs {
   data: State
-  piece: Piece  
+  piece: Piece
 }
 
 interface RenderPointArgs {

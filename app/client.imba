@@ -10,23 +10,24 @@ let state\State =
 	{
 		anchorClicked: false
 		canvasClicked: false
-		currentTheme: 'dark'
 		currentCoords: null
-		units: 'imperial'
-		zoom: 1
+		currentTheme: 'dark'
 		dpi: 96
-		pieces: []
-		status: "Idle"
-		parent: '#canvas'
 		menu: false
-		settingsMenu: false
-		selectedPiece: null
-		selectedPoint: null
 		menuX: null
 		menuY: null
 		mousedown: false
 		moving: null
 		panning: false
+		parent: '#canvas'
+		pieceMoving: false
+		pieces: []
+		selectedPiece: null
+		selectedPoint: null
+		settingsMenu: false
+		status: "Idle"
+		units: 'imperial'
+		zoom: 1
 	}
 
 History.set state

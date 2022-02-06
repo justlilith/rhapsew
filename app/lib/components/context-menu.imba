@@ -25,22 +25,25 @@ tag context-menu
 	# def deletePiece
 
 	<self.context-menu[opacity@off:0 ease:0.25s] ease>
-		if data..canvasClicked
+		if data
 			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
+				if data..canvasClicked
+					<div.menu-item>
+						<span.material-icons-outlined> "checkroom"
+						<span @click=(addPiece e)> "New Piece"
+				if data..anchorClicked
+					<div.menu-item>
+						<span.material-icons-outlined> "align_horizontal_center"
+						if data..selectedPiece.mirrorLine.length == 0 || data..selectedPiece.mirrorLine[1]
+							<span @click=(setMirrorLine e)> "Set Mirror Line (Point 1)"
+						else
+							<span @click=(setMirrorLine e)> "Set Mirror Line (Point 2)"
+					<div.menu-item>
+						<span.material-icons-outlined> "align_horizontal_center"
+						<span @click=(removeMirrorLine e)> "Remove Mirror Line"
 				<div.menu-item>
-					<span.material-icons-outlined> "checkroom"
-					<span @click=(addPiece e)> "New Piece"
-		if data..anchorClicked
-			<section.menu[t:{data.menuY}px l:{data.menuX}px] id="contextmenu">
-				<div.menu-item>
-					<span.material-icons-outlined> "align_horizontal_center"
-					if data.selectedPiece.mirrorLine.length == 0 || data.selectedPiece.mirrorLine[1]
-						<span @click=(setMirrorLine e)> "Set Mirror Line (Point 1)"
-					else
-						<span @click=(setMirrorLine e)> "Set Mirror Line (Point 2)"
-				<div.menu-item>
-					<span.material-icons-outlined> "align_horizontal_center"
-					<span @click=(removeMirrorLine e)> "Remove Mirror Line"
+					<span.material-icons-outlined> "laptop"
+					<span @click=(console.log data)> "Dump Data to Logs"
 			
 		# <span @click=(do PieceOps.removePiece)> "Delete Piece"
 

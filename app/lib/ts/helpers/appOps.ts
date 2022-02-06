@@ -10,31 +10,31 @@ const TOPBARHEIGHT = 30
 
 
 
-function clearScreen (args):State {
-  let data:State = args.data
-  
+function clearScreen(args): State {
+  let data: State = args.data
+
   let draw = initSVGCanvas(data)
-  
+
   data.selectedPiece = null
   data.selectedPoint = null
   data.pieces = []
-  
+
   draw.clear()
   return data
 }
 
-function exportSvg (args) {
+function exportSvg(args) {
   const data = args.data
   let draw = initSVGCanvas(data)
-  let output = draw.svg((node:Element) => {
+  let output = draw.svg((node: Element) => {
     if (node.hasClass('segment-wrangler') || node.hasClass('anchor') || node.hasClass('selection-box')) {
       return false
     }
     if (node.hasClass('piece')) {
-      node.attr({stroke: "black"})
+      node.attr({ stroke: "black" })
     }
   })
-  let svgPacket = {name: ""}
+  let svgPacket = { name: "" }
   // notify('downloading chat! c:', 1000)
   svgPacket.name = "Rhapsew — Document"
   const date = new Date()
@@ -43,194 +43,205 @@ function exportSvg (args) {
     type: 'text/svg'
   })
   const download = document.createElement('a')
-  download.setAttribute('id',file.name)
-  download.setAttribute('download',filenameFinal)
+  download.setAttribute('id', file.name)
+  download.setAttribute('download', filenameFinal)
   const link = URL.createObjectURL(file)
-  download.setAttribute('href',link)
+  download.setAttribute('href', link)
   document.body.append(download)
   download.click()
-  download.onload = () => {URL.revokeObjectURL(link)}
+  download.onload = () => { URL.revokeObjectURL(link) }
   document.body.removeChild(download)
 }
 
-function handleClick (args:HandleClickArgs):{data:State, changed:boolean} {
-  let data= args.data
-  let event= args.event
+function handleClick(args: HandleClickArgs): { data: State, changed: boolean } {
+  let data = args.data
+  let event = args.event
   let changed = false
   const id = event.target.getAttribute('data-id') ?? null
   const type = (JSON.parse(event.target.getAttribute('data-point')) as PointT)?.type ?? null
   const point = (JSON.parse(event.target.getAttribute('data-point')) as PointT) ?? null
-  
+
   let draw = initSVGCanvas(data)
-  
+
   if (event.ctrlKey && type == 'control') {
     data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = data.selectedPiece.points.filter(point => point.id != id)
     data.selectedPiece.points = data.selectedPiece.points.filter(point => point.id != id)
     changed = true
   }
-  
-  return {data, changed}
+
+  return { data, changed }
 }
 
 
-function handleMousedown (args:HandleMouseArgs):State {
+function handleMousedown(args: HandleMouseArgs): State {
   let data = args.data
   let event = args.event
   let draw = initSVGCanvas(data)
-  
+  let currentCoords = draw.point(event.clientX, event.clientY)
+
   console.info(`Rhapsew [Info]: Mousedown`)
   data.mousedown = true
-  
+
   if (event.target.classList.contains(`anchor`)) {
     switch (event.button) {
       case 2: {
         data.anchorClicked = true
         data.canvasClicked = false
-        data = toggleContextMenu({data, state: 'on', x: event.clientX, y: event.clientY})
+        data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
         let pieceId: string = event.target.getAttribute('data-pieceId')
-        let point:PointT = JSON.parse(event.target.getAttribute('data-point'))
+        let point: PointT = JSON.parse(event.target.getAttribute('data-point'))
         data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
         data.selectedPoint = data.pieces.filter(piece => piece.id == pieceId)[0].points.filter(p => p.id == point.id)[0]
         break
       }
       case 0:
-        default: {
+      default: {
         data.canvasClicked = true
         data.anchorClicked = false
-        data = toggleContextMenu({data, state: 'off', x: event.clientX, y: event.clientY})
+        data = toggleContextMenu({ data, state: 'off', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
-        
-        let domPoint:PointT = JSON.parse(event.target.getAttribute('data-point'))
+
+        let domPoint: PointT = JSON.parse(event.target.getAttribute('data-point'))
         let id = domPoint.id
         let pieceId: string = event.target.getAttribute('data-pieceId')
-        
+
         data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
         data.selectedPoint = domPoint
         data.moving = true
-        
+
         console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
         console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
         console.info(`Rhapsew [Info]: data.selectedPiece.points[0].id: ${data?.selectedPiece.points[0].id}`)
-        
+
         if (id == data.selectedPiece.points[0].id && data.selectedPiece.points.length != 1) {
           data.selectedPiece.closed = true
           console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
         }
-        
+
         draw.find('.activeLine').forEach(element => element.remove())
         data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points.forEach(point => point.id == id ? point.active = true : point.active = false)
         data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
       }
     }
   }
-  
-  
-  
+
+
+
   if (event.target.classList.contains('svg') || event.target.classList.contains('spark-guide')) {
     data.canvasClicked = true
     data.anchorClicked = false
     switch (event.button) {
       case 2: // right-click
-      data = toggleContextMenu({data, state:'on', x:event.clientX, y:event.clientY})
-      draw.find('.activeLine').forEach(element => element.remove())
-      break
+        data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
+        draw.find('.activeLine').forEach(element => element.remove())
+        break
       case 0:
       default: // left-click
-      // this area right here, officer
-      data = toggleContextMenu({data, state:'off'})
-      let points = []
-      // data.selectedPoint = null
-      
-      if (data.selectedPiece) {
-        if (!data.selectedPiece.closed) {
-          const newPoint = PieceOps.addPoint({...args, pieceId: data.selectedPiece.id})
-          // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
-          points = [...data.selectedPiece.points, newPoint]
-          // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
-          // no circular references — update both
-          data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
-          data.selectedPiece.points = points
-          data.selectedPoint = data.selectedPiece.points.slice(-1)[0]
-        }
-        else {
+        // this area right here, officer
+        data = toggleContextMenu({ data, state: 'off' })
+        let points = []
+        // data.selectedPoint = null
+        // data.selectedPiece = null
+        let domPiece = draw.find(`.rhapsew-piece`)
+        domPiece.forEach(dp => {
+          if (dp.inside(currentCoords.x, currentCoords.y)) {
+            data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
+            data.pieceMoving = true
+            console.log('inside!')
+            data.selectedPiece.points.forEach(point => {
+              let offset = {
+                x: point.x - currentCoords.x
+                , y: point.y - currentCoords.y
+              }
+              point.offset = offset
+            })
+          }
+        })
+
+        if (data.selectedPiece) {
+          if (data.selectedPiece.closed == false) { // piece is open
+            const newPoint = PieceOps.addPoint({ ...args, pieceId: data.selectedPiece.id })
+            // points = [...data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points, newPoint]
+            points = [...data.selectedPiece.points, newPoint]
+            // data.selectedPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
+            // no circular references — update both
+            data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
+            data.selectedPiece.points = points
+            data.selectedPoint = data.selectedPiece.points.slice(-1)[0]
+          }
+          else { // piece is closed
+            data.selectedPiece = null
+            data.selectedPoint = null
+            let domPiece = draw.find(`.rhapsew-piece`)
+            domPiece.forEach(dp => {
+              if (dp.inside(currentCoords.x, currentCoords.y)) {
+                data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
+              }
+            })
+            data.pieces.forEach(piece => {
+              piece.points.forEach(point => point.active = false)
+            })
+          }
+        } else {
           data.selectedPiece = null
           data.selectedPoint = null
+          data.pieceMoving = false
           data.pieces.forEach(piece => {
             piece.points.forEach(point => point.active = false)
           })
         }
-      } else {
-        data.selectedPiece = null
-        data.selectedPoint = null
-        data.pieces.forEach(piece => {
-          piece.points.forEach(point => point.active = false)
-        })
-      }
     }
   }
-  
+
   return data
 }
 
 
-function handleMouseup (args:HandleMouseArgs):State {
+function handleMousemove(args: HandleMoveArgs) {
   let data = args.data
   let event = args.event
-  let draw = initSVGCanvas(data)
-  
-  draw.find('.spark-guide').forEach(element => element.remove())
-  
-  data.moving = false
-  data.mousedown = false
-  return data  
-}
 
-
-function handleMousemove (args:HandleMoveArgs) {
-  let data = args.data
-  let event = args.event
-  
   let draw = initSVGCanvas(data)
   const slack = 5
   const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
   const allPoints = data.pieces.map(piece => piece.points).flat()
   const verticalNeighbor = allPoints.filter(point => point.x + slack >= currentCoords.x && point.x - slack <= currentCoords.x && point.id != data.selectedPoint?.id)[0]
   const horizontalNeighbor = allPoints.filter(point => point.y + slack >= currentCoords.y && point.y - slack <= currentCoords.y && point.id != data.selectedPoint?.id)[0]
-  
+
   draw.find('.spark-guide').forEach(element => element.remove())
-  
+
   if (!data.menu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
     draw.find('.spark-guide').forEach(element => element.remove())
-    
-    let coords = {x: verticalNeighbor?.x ?? currentCoords.x, y: horizontalNeighbor?.y ?? currentCoords.y}
+
+    let coords = { x: verticalNeighbor?.x ?? currentCoords.x, y: horizontalNeighbor?.y ?? currentCoords.y }
     if (event.shiftKey) {
       let ratio = Math.abs(data.selectedPoint.x - coords.x) / Math.abs(data.selectedPoint.y - coords.y)
       if (ratio > 1) { // horizontal
-        coords = {x: coords.x, y: data.selectedPiece.points.slice(-1)[0].y}
+        coords = { x: coords.x, y: data.selectedPiece.points.slice(-1)[0].y }
       } else { //vertical
-        coords = {x: data.selectedPiece.points.slice(-1)[0].x, y: coords.y}
+        coords = { x: data.selectedPiece.points.slice(-1)[0].x, y: coords.y }
       }
     }
     let activeLine = SVG()
-    .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, coords.x + 5, coords.y + 5])
-    .addClass('activeLine')
-    .addClass('rhapsew-element')
-    .stroke("red")
-    
+      .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, coords.x + 5, coords.y + 5])
+      .addClass('activeLine')
+      .addClass('rhapsew-element')
+      .stroke("red")
+
     draw.add(activeLine)
-    
+
     if (verticalNeighbor) {
-      let sparkGuide = SVG().line([verticalNeighbor.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      let sparkGuide = SVG().line([verticalNeighbor.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
       draw.add(sparkGuide)
     }
     if (horizontalNeighbor) {
-      let sparkGuide = SVG().line([-1500, horizontalNeighbor.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+      let sparkGuide = SVG().line([-1500, horizontalNeighbor.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
       draw.add(sparkGuide)
     }
   }
-  
+
   if (data.selectedPoint && data.moving) {
     let id = data.selectedPoint.id
     data.selectedPiece.points = data.selectedPiece.points.map(point => {
@@ -238,20 +249,31 @@ function handleMousemove (args:HandleMoveArgs) {
         point.x = verticalNeighbor?.x ?? currentCoords.x
         point.y = horizontalNeighbor?.y ?? currentCoords.y
         draw.find('.spark-guide').forEach(element => element.remove())
-        
+
         if (verticalNeighbor) {
-          let sparkGuide = SVG().line([currentCoords.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+          let sparkGuide = SVG().line([currentCoords.x, -1500, verticalNeighbor.x, 1500]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
           draw.add(sparkGuide)
         }
         if (horizontalNeighbor) {
-          let sparkGuide = SVG().line([-1500, currentCoords.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({color: "hsl(180, 100%, 50%)"})
+          let sparkGuide = SVG().line([-1500, currentCoords.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
           draw.add(sparkGuide)
-        } 
+        }
       }
       return point
     })
   }
-  
+
+  if (data.pieceMoving) {
+    let selectedPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
+    // selectedPiece.x(currentCoords.x + data.selectedPiece.offset.x)
+    // selectedPiece.y(currentCoords.y + data.selectedPiece.offset.y)
+    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = data.selectedPiece.points.map(point => {
+      point.x = point.offset.x + currentCoords.x
+      point.y = point.offset.y + currentCoords.y
+      return point
+    })
+  }
+
   if (event.ctrlKey && data.selectedPoint && event.button == 0) {
     // data.selectedPiece.points
     /* 
@@ -278,7 +300,7 @@ function handleMousemove (args:HandleMoveArgs) {
     * 
     * What about ctrl+click? Because this is only for ctrl+drag!!
     */
-    
+
     /**
     * Okay, so
     * := insert a new control point after the current point
@@ -286,46 +308,46 @@ function handleMousemove (args:HandleMoveArgs) {
     * := assign the new point to/as selected
     * := set the x y of the old point to its old position
     */
-    
+
     let currentPiece = data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0]
     let currentPoint = currentPiece.points.filter(point => point.id == data.selectedPoint.id)[0]
     let pointIndex = data.selectedPiece.points.indexOf(currentPoint) // returns -1 if not present!!
-    
-    let previousSegment = PieceOps.findPreviousSegment({data, point: currentPoint})
+
+    let previousSegment = PieceOps.findPreviousSegment({ data, point: currentPoint })
     let previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
-    
+
     const previousPositionPoint = (HistoryManager.previous() as State)
-    .selectedPiece
-    .points
-    .filter(point => point.id == currentPoint?.id)[0];
-    
-    const coords = {x: previousPositionPoint?.x, y: previousPositionPoint?.y}
-    
+      .selectedPiece
+      .points
+      .filter(point => point.id == currentPoint?.id)[0];
+
+    const coords = { x: previousPositionPoint?.x, y: previousPositionPoint?.y }
+
     if (currentPoint.type == "anchor") {
-      
+
       // range.length /* 1 or 2 */ 
       let range = data.selectedPiece.points.slice(previousSegmentIndex, pointIndex)
-      
+
       const after = data.selectedPiece.points.slice(pointIndex + 1)
-      
+
       // data.selectedPoint = {...data.selectedPoint, x: coords.x, y: coords.y}
       currentPoint.x = coords.x
       currentPoint.y = coords.y
-      currentPiece.points.filter(point => point.id == currentPoint.id)[0] = {...currentPoint, x: coords.x, y: coords.y}
-      
-      let newPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint})
-      let newPairedControlPoint = PieceOps.addPoint({event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint, pairId: newPoint.id})
+      currentPiece.points.filter(point => point.id == currentPoint.id)[0] = { ...currentPoint, x: coords.x, y: coords.y }
+
+      let newPoint = PieceOps.addPoint({ event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint })
+      let newPairedControlPoint = PieceOps.addPoint({ event, data, type: "control", pieceId: currentPiece.id, parent: currentPoint, pairId: newPoint.id })
       newPoint.pairId = newPairedControlPoint.id
-      
+
       const before = currentPiece.points.slice(0, pointIndex)
-      
+
       switch (range.length) {
         case 3: {// C
           const finalPointsArray = [...before, newPairedControlPoint, currentPoint, newPoint, ...after]
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
-          
+
           data.selectedPiece = currentPiece
           data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
           break
@@ -335,7 +357,7 @@ function handleMousemove (args:HandleMoveArgs) {
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
-          
+
           data.selectedPiece = currentPiece
           data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
           break
@@ -347,10 +369,10 @@ function handleMousemove (args:HandleMoveArgs) {
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
-          
+
           data.selectedPiece = currentPiece
           data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
-          
+
           break
         }
         case 0: {// M
@@ -359,13 +381,13 @@ function handleMousemove (args:HandleMoveArgs) {
           currentPiece.points = finalPointsArray
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].x = coords.x
           currentPiece.points.filter(point => point.id == currentPoint.id)[0].y = coords.y
-          
+
           data.selectedPiece = currentPiece
           data.selectedPoint = currentPiece.points[data.selectedPiece.points.indexOf(newPoint)]
           break
         }
         default:
-        break
+          break
       }
     } else { // "control"
       let pairedPoint = currentPiece.points.filter(point => point.pairId == currentPoint.id)[0]
@@ -376,80 +398,101 @@ function handleMousemove (args:HandleMoveArgs) {
         pairedPoint.y = currentPoint.parent.y - distanceY
       }
     }
-    
+
   }
-  
+
   if (data.panning && data.mousedown && event.buttons == 1) {
-    pan({currentCoords: {x:event.clientX, y: event.clientY}, data})
+    pan({ currentCoords: { x: event.clientX, y: event.clientY }, data })
     // data.panning = false
   }
-  
-  data.currentCoords = {x:event.clientX, y: event.clientY}
+
+  data.currentCoords = { x: event.clientX, y: event.clientY }
   return data
 }
 
-function init (data) {
-  document.querySelector('#canvas').addEventListener('contextmenu', (e:MouseEvent) => {
+
+function handleMouseup(args: HandleMouseArgs): State {
+  let data = args.data
+  let event = args.event
+  let draw = initSVGCanvas(data)
+
+  draw.find('.spark-guide').forEach(element => element.remove())
+  draw.find(`.bounding-box`).forEach(el => {
+    if (el.data('bounding-box-id') != data?.selectedPiece?.id) {
+      el.remove()
+    }
+  })
+
+  data.moving = false
+  data.mousedown = false
+  data.pieceMoving = false
+  return data
+}
+
+
+function init(data) {
+  document.querySelector('#canvas').addEventListener('contextmenu', (e: MouseEvent) => {
     e.preventDefault()
-    handleClick({event: e, data}) 
+    handleClick({ event: e, data })
   })
 }
 
-function initSVGCanvas (data:State):Element {
+function initSVGCanvas(data: State): Element {
   let draw = SVG(`svg`)
   if (!draw) {
     draw = SVG()
-    .addTo(data.parent)
-    .addClass(`svg`)
-    .addClass('rhapsew-element')
-    .viewbox('0 0 100 1')
-    // .size('100','100')
-    .panZoom({panning: false, zoomMin: 0.01, zoomMax: 20})
-    .zoom(1)
+      .addTo(data.parent)
+      .addClass(`svg`)
+      .addClass('rhapsew-element')
+      .viewbox('0 0 100 1')
+      // .size('100','100')
+      .panZoom({ panning: false, zoomMin: 0.01, zoomMax: 20 })
+      .zoom(1)
     // .animate()
-    
+
     draw.on('zoom', (event) => {
       // console.log(event)
       // data.zoom = event.detail.level
       // draw.fire('rhapsewZoom', event)
       window.dispatchEvent(new CustomEvent('rhapsewZoom', event))
-      
+
     })
   }
   return draw
 }
 
-function pan(args:PanArgs) {
+
+function pan(args: PanArgs) {
   let data = args.data
   let currentCoords = args.currentCoords
   let draw = initSVGCanvas(args.data)
-  let viewBox:string = draw.attr('viewBox')
+  let viewBox: string = draw.attr('viewBox')
   let viewBoxArray = viewBox.split(' ').map(coord => parseInt(coord))
   viewBoxArray[0] = viewBoxArray[0] + data.currentCoords.x - currentCoords.x
   viewBoxArray[1] = viewBoxArray[1] + data.currentCoords.y - currentCoords.y
   draw.attr('viewBox', viewBoxArray.join(' '))
 }
 
-function shallowCopy (arg) {
+function shallowCopy(arg) {
   return JSON.parse(JSON.stringify(arg))
 }
 
-function toggleContextMenu (args) {
+function toggleContextMenu(args) {
   switch (args.state) {
     case 'on':
-    args.data.menu = true
-    args.data.menuX = args.x ?? 0
-    args.data.menuY = args.y ?? 0
-    break
+      args.data.menu = true
+      args.data.menuX = args.x ?? 0
+      args.data.menuY = args.y ?? 0
+      break
     case 'off':
     default:
-    args.data.menu = false
+      args.data.menu = false
   }
   return args.data
 }
 
-function writeToStatus () {
-  
+function writeToStatus() {
+
 }
 
 export {
@@ -457,8 +500,8 @@ export {
   , exportSvg
   , handleClick
   , handleMousedown
-  , handleMouseup
   , handleMousemove
+  , handleMouseup
   , init
   , initSVGCanvas
   , pan
