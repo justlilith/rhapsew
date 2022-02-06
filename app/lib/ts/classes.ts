@@ -27,6 +27,7 @@ class Point {
     this.pieceId = args.pieceId
     this.parent ??= args.parent
     this.pairId = args.pairId ?? null
+    this.offset = args.offset ?? null
   }
   x: number
   y: number
@@ -36,6 +37,7 @@ class Point {
   id: string
   parent?: PointT
   pairId?: string
+  offset: { x: number, y: number }
 }
 
 export {

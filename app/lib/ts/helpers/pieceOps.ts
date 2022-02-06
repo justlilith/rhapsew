@@ -11,21 +11,21 @@ const TOPBARHEIGHT = 30
 function addPiece(args: PieceArgs): State {
   let data: State = { ...args.data }
   let event = args.event
-
+  
   console.info('Rhapsew [Info]: Adding a new piece')
-
-  let newPiece: PieceT = { points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [] } // wait nvm
+  
+  let newPiece: PieceT = { points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null } // wait nvm
   newPiece.points[0] = addPoint({ data, event, pieceId: newPiece.id }) // trying this out
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
   // data.selectedPiece = null
-
-
+  
+  
   data.selectedPiece = data.pieces.filter(piece => piece.id == newPiece.id)[0]
   // data.selectedPiece = data.pieces.slice(-1)[0]
   data.selectedPoint = data.selectedPiece.points[0]
   console.info(`Rhapsew [Info]: New piece added: ${data.selectedPiece.id}`)
-
+  
   return data
 }
 
@@ -40,11 +40,11 @@ function addPoint(args: AddPointArgs): PointT {
   const type = args.type ?? "anchor"
   const coords = args.coords ?? SVG(`svg`).point(args.event.pageX, args.event.pageY)
   const pairId = args.pairId ?? null
-
+  
   console.info(`Rhapsew [Info]: Adding a new point . . .`)
-
+  
   const point = new Point({ ...coords, active: true, type, id, pieceId, parent, pairId })
-
+  
   if (event.shiftKey) {
     let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
     let slack = 0.1
@@ -56,9 +56,9 @@ function addPoint(args: AddPointArgs): PointT {
       point.x = piece.points.slice(-1)[0].x
     }
   }
-
+  
   console.info(`Rhapsew [Info]: New point: ${point.id}`)
-
+  
   return point
 }
 
@@ -90,28 +90,28 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
   let renderedPiece = args.piece
   let id = args.pieceId
   const draw = AppOps.initSVGCanvas(data)
-  let piece = draw.find(`[data-piece-id="${id}"]`)?.[0]
-
+  draw.find(`[data-bounding-box-id="${id}"]`).forEach(el => el.remove())
+  // draw.find(`.bounding-box`).forEach(el => el.remove())
   // let box = draw.find(`.bounding-box`)
   // let box = renderedPiece.find(`.bounding-box`)
   // let box = renderedPiece.find(`[data-bounding-box-id="${piece.id}"]`)
-  if (id == data?.selectedPiece?.id) {
+  if (data.selectedPiece && id == data.selectedPiece.id) {
     let bbox = renderedPiece.bbox()
     let extents = Utilities.findExtents({ data, piece: renderedPiece })
     const boundingBox = SVG()
-      .rect(bbox.w, bbox.h)
-      .x(extents.x)
-      .y(extents.y)
-      .stroke({
-        color: 'white',
-        width: 1
-      })
-      .fill('none')
-      .data('bounding-box-id', id)
-      .addClass('bounding-box')
+    .rect(bbox.w, bbox.h)
+    .x(extents.x)
+    .y(extents.y)
+    .stroke({
+      color: 'white',
+      width: 1
+    })
+    .fill('none')
+    .data('bounding-box-id', id)
+    .addClass('bounding-box')
     renderedPiece.add(boundingBox)
   }
-
+  
   return renderedPiece
 }
 
@@ -122,19 +122,21 @@ function generatePiece(args: GeneratePieceArgs): G {
   let mirrored = args.mirrored
   const draw = AppOps.initSVGCanvas(data)
   let renderedPiece: G = SVG().group()
-
+  
+  draw.find(`[data-piece-id="${piece.id}"]`).forEach(el => el.remove())
   renderedPiece.data('piece-id', piece.id)
-
+  renderedPiece.addClass('rhapsew-piece')
+  
   piece.points.forEach((point: PointT, index: number) => {
     let pathString = `M ${point.x} ${point.y}`
-
+    
     const point0 = point
     const pointPieceOrigin = piece.points[0]
     const point1 = piece.points[index + 1] ?? null
     const point2 = piece.points[index + 2] ?? null
     const point3 = piece.points[index + 3] ?? null
     const point4 = piece.points[index + 4] ?? null
-
+    
     if (point.type == "anchor") {
       if (point3 && point1?.type == 'control' && point2?.type == 'control' && (point3?.type == 'anchor' || !point4)) {
         pathString += ` C ${point1.x} ${point1.y} ${point2.x} ${point2.y} ${point3.x} ${point3.y}`
@@ -156,88 +158,89 @@ function generatePiece(args: GeneratePieceArgs): G {
         // L
       }
     }
-
-
+    
+    
     const segment = SVG()
-      .path(pathString)
-      .data("piece", piece)
-      .data("point-id", point.id)
-      .data("starting-point", point.id)
-      .attr({ x: point.x, y: point.y, fill: "none" })
-      .stroke({ color: "hsl(180, 100%, 50%)", width: 2 })
-      .addClass('segment')
-      .addClass('rhapsew-element')
-
+    .path(pathString)
+    .data("piece", piece)
+    .data("point-id", point.id)
+    .data("starting-point", point.id)
+    .attr({ x: point.x, y: point.y, fill: "none" })
+    .stroke({ color: "hsl(180, 100%, 50%)", width: 2 })
+    .addClass('segment')
+    .addClass('rhapsew-element')
+    
     const segmentWrangler = SVG()
-      .path(pathString)
-      .data("piece", piece)
-      .data("point-id", point.id)
-      .data("starting-point", point.id)
-      .attr({ x: point.x, y: point.y, fill: "none" })
-      .stroke({ color: "hsla(0, 0%, 0%, 0.1)", width: 10 })
-      .addClass('segment-wrangler')
+    .path(pathString)
+    .data("piece", piece)
+    .data("point-id", point.id)
+    .data("starting-point", point.id)
+    .attr({ x: point.x, y: point.y, fill: "none" })
+    .stroke({ color: "hsla(0, 0%, 0%, 0.1)", width: 10 })
+    .addClass('segment-wrangler')
+    .addClass('rhapsew-element')
+    .click((event) => {
+      console.info('Rhapsew [Info]: Path clicked')
+      // if (data.selectedPiece) {
+      //   data.selectedPiece.points = data
+      //   .selectedPiece
+      //   .points
+      //   .concat(
+      //     addPoint({
+      //       event, data, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id
+      //     }))
+      //   }
+    })
+    .on('mouseover', (event: MouseEvent) => {
+      let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
+      let suffix = data.units == "imperial" ? "in" : "cm"
+      let length = (segment.length() / data.dpi).toPrecision(5).toString() + suffix
+      
+      let text = SVG()
+      .text(length)
+      .attr({ x: mousePoint.x + 20, y: mousePoint.y + 25 })
+      .font({
+        family: 'sans-serif'
+        , size: 12
+        , anchor: 'left'
+      })
+      .addClass('hover-measure')
       .addClass('rhapsew-element')
-      .click((event) => {
-        console.info('Rhapsew [Info]: Path clicked')
-        // if (data.selectedPiece) {
-        //   data.selectedPiece.points = data
-        //   .selectedPiece
-        //   .points
-        //   .concat(
-        //     addPoint({
-        //       event, data, index: data.selectedPiece.points.length, pieceId: data.selectedPiece.id
-        //     }))
-        //   }
-      })
-      .on('mouseover', (event: MouseEvent) => {
-        let mousePoint = SVG(`svg`).point(event.clientX, event.clientY)
-        let suffix = data.units == "imperial" ? "in" : "cm"
-        let length = (segment.length() / data.dpi).toPrecision(5).toString() + suffix
-
-        let text = SVG()
-          .text(length)
-          .attr({ x: mousePoint.x + 20, y: mousePoint.y + 25 })
-          .font({
-            family: 'sans-serif'
-            , size: 12
-            , anchor: 'left'
-          })
-          .addClass('hover-measure')
-          .addClass('rhapsew-element')
-
-        draw.add(text)
-      })
-      .on('mouseout', (event) => {
-        draw.find('.hover-measure').forEach(element => element.remove())
-      })
-
+      
+      draw.find(`.hover-measure`).forEach(el => el.remove())
+      draw.add(text)
+    })
+    .on('mouseout', (event) => {
+      draw.find('.hover-measure').forEach(element => element.remove())
+    })
+    
     // draw.add(segment)
     // draw.add(segmentWrangler)
-
+    
     if (point.type == 'control') { // C, S
       let parent = data.pieces.filter(p => p.id == piece.id)[0].points.filter(p => p.id == point.parent.id)[0]
       draw.find(`[data-control-line-id="${point.id}"]`) ? draw.find(`[data-control-line-id="${point.id}"]`).forEach(line => line.remove()) : null
       let controlPath = [point.x, point.y, parent.x, parent.y]
-
+      
       let controlLine = SVG()
-        .line(controlPath)
-        .stroke('hsla(240, 100%, 50%, 0.5)')
-        .data("parent-id", point.parent.id)
-        .data("control-line-id", point.id)
-        .addClass('control-line')
-        .addClass('rhapsew-element')
-
+      .line(controlPath)
+      .stroke('hsla(240, 100%, 50%, 0.5)')
+      .data("parent-id", point.parent.id)
+      .data("control-line-id", point.id)
+      .addClass('control-line')
+      .addClass('rhapsew-element')
+      
       draw.add(controlLine)
       // renderedPath += ` L ${point.x} ${point.y}`
     }
-
+    
     const domSegment = draw.find(`[data-point-id = "${point.id}"`)?.[0]
     if (domSegment) {
       if (!_.isEqual(AppOps.shallowCopy(domSegment.data("piece")), AppOps.shallowCopy(piece))) {
         console.info(`Rhapsew [Info]: Rerendering piece: ${piece.id}`)
         draw.find('.rhapsew-element').forEach(element => element.remove())
-        let box = draw.find(`[data-bounding-box-id="${piece.id}"]`)
-        box ? box.forEach(el => el.remove()) : null
+        // let box = draw.find(`[data-bounding-box-id="${piece.id}"]`)
+        // box ? box.forEach(el => el.remove()) : null
         renderedPiece.add(segment)
         renderedPiece.add(segmentWrangler)
         // piece.points.forEach(point => {
@@ -253,7 +256,7 @@ function generatePiece(args: GeneratePieceArgs): G {
       // })
     }
   })
-
+  
   return renderedPiece
 }
 
@@ -261,16 +264,13 @@ function generatePiece(args: GeneratePieceArgs): G {
 function renderPiece(args: RenderPieceArgs): void {
   let data = args.data
   let piece = args.piece
-
+  
   const draw = AppOps.initSVGCanvas(data)
-
+  
   data = setMirrorLine({ data, piece })
+  
   let renderedPiece = generatePiece({ data, piece })
   
-  piece.points.forEach(point => {
-    renderPoint({ id: point.id, data, point, piece })
-  })
-
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
     const rotateValue = Utilities.findAngle({ mode: 'horizontal', point1: piece.mirrorLine[0], point2: piece.mirrorLine[1] })
     const mirroredPiece = renderedPiece.clone().transform({
@@ -280,10 +280,11 @@ function renderPiece(args: RenderPieceArgs): void {
     })
     renderedPiece.add(mirroredPiece)
   }
+  
   renderedPiece = generateBoundingBox({ data, piece: renderedPiece, pieceId: piece.id })
+  
   draw.add(renderedPiece)
-
-
+  
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
     const point1 = piece.mirrorLine[0]
     const point2 = piece.mirrorLine[1]
@@ -291,15 +292,20 @@ function renderPiece(args: RenderPieceArgs): void {
     line ? line.remove() : null
     let mirrorPath = [point1.x, point1.y, point2.x, point2.y]
     let mirrorLine = SVG()
-      .line(mirrorPath)
-      .stroke({ color: 'hsla(30, 100%, 50%, 0.5)', width: 2 })
-      .data("mirror-line-id", piece.id)
-      .addClass('control-line')
-      .addClass('rhapsew-element')
-
+    .line(mirrorPath)
+    .stroke({ color: 'hsla(30, 100%, 50%, 0.5)', width: 2 })
+    .data("mirror-line-id", piece.id)
+    .addClass('control-line')
+    .addClass('rhapsew-element')
+    
     draw.add(mirrorLine)
   }
+  
+  piece.points.forEach(point => {
+    renderPoint({ id: point.id, data, point, piece })
+  })
 }
+
 
 function renderPoint(args: RenderPointArgs): void {
   let data = args.data
@@ -307,43 +313,43 @@ function renderPoint(args: RenderPointArgs): void {
   let point = args.point
   let pieceId = args.piece.id
   const draw = AppOps.initSVGCanvas(data)
-
+  
   const domPoint = draw.find(`[data-id = "${point.id}"]`)[0]
-
+  
   // console.info(`Rhapsew [Info]: Purging DOM point: ${id}`)
   draw.find(`[data-id = "${id}"]`).forEach(element => element.remove())
   // draw.find(`.selection-box`).forEach(element => element.remove())
-
+  
   const renderedPoint = SVG()
-    .circle()
-    .attr({ fill: 'black', cx: point.x, cy: point.y })
-    .stroke({ color: "hsla(0,0%,0%,0)", width: 15 })
-    .size(7)
-    .data('id', id)
-    .data('point', point)
-    .data('pieceId', pieceId)
-    .addClass('anchor')
-    .addClass('rhapsew-element')
-
+  .circle()
+  .attr({ fill: 'black', cx: point.x, cy: point.y })
+  .stroke({ color: "hsla(0,0%,0%,0)", width: 15 })
+  .size(7)
+  .data('id', id)
+  .data('point', point)
+  .data('pieceId', pieceId)
+  .addClass('anchor')
+  .addClass('rhapsew-element')
+  
   draw.add(renderedPoint)
   const domSelectionBox = draw.find(`.selection-box`)[0]
-
+  
   const selectionBox = SVG()
-    .rect()
-    .attr({ fill: "none", width: 20, height: 20, x: point.x - 10, y: point.y - 10 })
-    .stroke({ color: "hsla(0,0%,0%,0.5)", width: 2 })
-    .data('id', id)
-    .addClass('selection-box')
-    .addClass('rhapsew-element')
-
+  .rect()
+  .attr({ fill: "none", width: 20, height: 20, x: point.x - 10, y: point.y - 10 })
+  .stroke({ color: "hsla(0,0%,0%,0.5)", width: 2 })
+  .data('id', id)
+  .addClass('selection-box')
+  .addClass('rhapsew-element')
+  
   if (data.selectedPoint) {
     switch (data.selectedPoint.id == id) {
       case true:
-        if (domSelectionBox) {
-          domSelectionBox.remove()
-        }
-        draw.add(selectionBox)
-        break
+      if (domSelectionBox) {
+        domSelectionBox.remove()
+      }
+      draw.add(selectionBox)
+      break
       default:
     }
   }
@@ -355,7 +361,7 @@ function setMirrorLine(args: SetMirrorLineArgs) {
   let piece = args.piece
   const resetPoint = args.resetPoint ?? null
   const clear = args.clear ?? false
-
+  
   if ((piece.mirrorLine?.[0] == null || piece.mirrorLine?.[1] != null) && resetPoint) {
     data.pieces.filter(p => p.id == piece.id)[0].mirrorLine = [resetPoint, null]
   }
@@ -371,7 +377,7 @@ function setMirrorLine(args: SetMirrorLineArgs) {
   if (clear) {
     piece.mirrorLine = []
   }
-
+  
   return data
 }
 

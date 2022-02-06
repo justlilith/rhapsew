@@ -14,7 +14,7 @@ tag app-canvas
 		AppOps.initSVGCanvas data
 		window.addEventListener('rhapsewZoom', &) do(e)
 			handleZoom e
-		setInterval(&,50) do # renderLoop; 20 == 50fps, 100 == 10fps
+		setInterval(&,15) do # renderLoop; 20 == 50fps, 100 == 10fps
 			# PieceOps.wipe data
 			unless data.pieces.length == 0
 				for piece of data.pieces
