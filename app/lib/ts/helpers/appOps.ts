@@ -126,7 +126,23 @@ function handleMousedown(args: HandleMouseArgs): State {
     }
   }
 
-
+  if (event.target.classList.contains('segment') || event.target.classList.contains('segment-wrangler')) {
+    const pointId = event.target.getAttribute('data-point-id')
+    console.log('here!')
+    console.log(event.target)
+    console.log(event.target.getAttribute('data-point-id'))
+    let domSegment = draw.find(`[data-starting-point-id="${pointId}"]`)[0]
+    let newPoint = PieceOps.addPoint({
+      event
+      , data
+      , pieceId: data.selectedPiece.id
+      , coords: { x: currentCoords.x, y: currentCoords.y }
+    })
+    const previous = data.selectedPiece.points.slice(0, data.selectedPiece.points.indexOf(data.selectedPiece.points.filter(point => point.id == pointId)[0]) + 1)
+    const after = data.selectedPiece.points.slice(data.selectedPiece.points.indexOf(data.selectedPiece.points.filter(point => point.id == pointId)[0]) + 1, data.selectedPiece.points.length + 1)
+    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = [...previous, newPoint, ...after]
+    data.selectedPoint = data.selectedPiece.points.filter(point => point.id == newPoint.id)[0]
+  }
 
   if (event.target.classList.contains('svg') || event.target.classList.contains('spark-guide')) {
     data.canvasClicked = true
