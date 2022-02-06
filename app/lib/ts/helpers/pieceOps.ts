@@ -241,16 +241,16 @@ function generatePiece(args: GeneratePieceArgs): G {
         draw.find('.rhapsew-element').forEach(element => element.remove())
         // let box = draw.find(`[data-bounding-box-id="${piece.id}"]`)
         // box ? box.forEach(el => el.remove()) : null
-        renderedPiece.add(segment)
         renderedPiece.add(segmentWrangler)
+        renderedPiece.add(segment)
         // piece.points.forEach(point => {
         //   renderPoint({ id: point.id, data, point, piece })
         // })
         // }
       }
     } else {
-      renderedPiece.add(segment)
       renderedPiece.add(segmentWrangler)
+      renderedPiece.add(segment)
       // piece.points.forEach(point => {
       //   renderPoint({ id: point.id, data, point, piece })
       // })
