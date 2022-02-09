@@ -43,7 +43,11 @@ function findAngle(args: FindAngleArgs): number {
 function findExtents(args) {
   let data: State = args.data
   let piece: G = args.piece
-  return { x: piece.x(), y: piece.y(), width: piece.width(), height: piece.height() }
+  return {
+    x: parseInt(piece.x().toString())
+    , y: parseInt(piece.y().toString())
+    , width: parseInt(piece.width().toString())
+    , height: parseInt(piece.height().toString()) }
 }
 
 

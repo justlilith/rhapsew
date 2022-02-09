@@ -14,7 +14,7 @@ function addPiece(args: PieceArgs): State {
   
   console.info('Rhapsew [Info]: Adding a new piece')
   
-  let newPiece: PieceT = { points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null } // wait nvm
+  let newPiece: PieceT = { points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null } // wait nvm
   newPiece.points[0] = addPoint({ data, event, pieceId: newPiece.id }) // trying this out
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
@@ -90,12 +90,13 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
   let renderedPiece = args.piece
   let id = args.pieceId
   const draw = AppOps.initSVGCanvas(data)
-  draw.find(`[data-bounding-box-id="${id}"]`).forEach(el => el.remove())
+  // draw.find(`[data-bounding-box-id="${id}"]`).forEach(el => el.remove())
   // draw.find(`.bounding-box`).forEach(el => el.remove())
   // let box = draw.find(`.bounding-box`)
   // let box = renderedPiece.find(`.bounding-box`)
   // let box = renderedPiece.find(`[data-bounding-box-id="${piece.id}"]`)
   if (data.selectedPiece && id == data.selectedPiece.id) {
+    let handleWidth = 10
     let bbox = renderedPiece.bbox()
     let extents = Utilities.findExtents({ data, piece: renderedPiece })
     const boundingBox = SVG()
@@ -109,7 +110,41 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
     .fill('none')
     .data('bounding-box-id', id)
     .addClass('bounding-box')
+    
+    let handleBottomRight = SVG()
+    .rect(handleWidth, handleWidth)
+    .x(extents.x + extents.width - (handleWidth / 2))
+    .y(extents.y + extents.height - (handleWidth / 2))
+    .stroke({
+      color: 'white',
+      width: 1
+    })
+    .fill('white')
+    .data('bounding-box-id', id)
+    .addClass('bounding-box-handle')
+    .addClass('rhapsew-element')
+    // .on('click', e => console.log(e))
+    
+    let handleBottomLeft = handleBottomRight
+    .clone()
+    .x(extents.x - (handleWidth / 2))
+    .y(extents.y + extents.height - (handleWidth / 2))
+    
+    let handleTopLeft = handleBottomRight
+    .clone()
+    .x(extents.x - (handleWidth / 2))
+    .y(extents.y - (handleWidth / 2))
+    
+    let handleTopRight = handleBottomRight
+    .clone()
+    .x(extents.x + extents.width - (handleWidth / 2))
+    .y(extents.y - (handleWidth / 2))
+
     renderedPiece.add(boundingBox)
+    renderedPiece.add(handleBottomRight)
+    renderedPiece.add(handleBottomLeft)
+    renderedPiece.add(handleTopLeft)
+    renderedPiece.add(handleTopRight)
   }
   
   return renderedPiece
@@ -302,7 +337,7 @@ function renderPiece(args: RenderPieceArgs): void {
   }
   
   piece.points.forEach(point => {
-    renderPoint({ id: point.id, data, point, piece })
+    renderPoint({ id: point.id, data, point, piece, renderedPiece })
   })
 }
 
@@ -312,6 +347,7 @@ function renderPoint(args: RenderPointArgs): void {
   let id = args.id
   let point = args.point
   let pieceId = args.piece.id
+  let renderedPiece = args.renderedPiece
   const draw = AppOps.initSVGCanvas(data)
   
   const domPoint = draw.find(`[data-id = "${point.id}"]`)[0]
@@ -331,7 +367,7 @@ function renderPoint(args: RenderPointArgs): void {
   .addClass('anchor')
   .addClass('rhapsew-element')
   
-  draw.add(renderedPoint)
+  renderedPiece.add(renderedPoint)
   const domSelectionBox = draw.find(`.selection-box`)[0]
   
   const selectionBox = SVG()

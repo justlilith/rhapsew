@@ -9,12 +9,14 @@ class Piece {
     this.points = []
     this.closed = false
     this.mirrorLine = []
+    this.mousedownSize = null
   }
   points: PointT[]
   name: string = "init"
   closed: boolean
   id: string
   mirrorLine: PointT[]
+  mousedownSize: { width: number, height: number }
 }
 
 class Point {
@@ -28,6 +30,7 @@ class Point {
     this.parent ??= args.parent
     this.pairId = args.pairId ?? null
     this.offset = args.offset ?? null
+    this.mousedownCoords = null
   }
   x: number
   y: number
@@ -35,6 +38,7 @@ class Point {
   type: "anchor" | "control"
   active: boolean
   id: string
+  mousedownCoords: { x: number, y: number }
   parent?: PointT
   pairId?: string
   offset: { x: number, y: number }

@@ -126,6 +126,26 @@ function handleMousedown(args: HandleMouseArgs): State {
     }
   }
 
+  console.log(event.target.classList)
+
+  if (event.target.classList.contains('bounding-box-handle')) {
+    console.log('handle!')
+    data.resizing = true
+    data.moving = false
+    data.pieceMoving = false
+    data.mousedownCoords = currentCoords
+    const domPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
+    data.pieces.filter(p => p.id == data.selectedPiece.id)[0].mousedownSize = { width: parseFloat(domPiece.width().toString()), height: parseFloat(domPiece.height().toString()), x: parseFloat(domPiece.x().toString()), y: parseFloat(domPiece.y().toString()) }
+    data.pieces.filter(p => p.id == data.selectedPiece.id)[0].points.forEach(point => {
+      let offset = {
+        x: point.x - currentCoords.x
+        , y: point.y - currentCoords.y
+      }
+      point.offset = offset
+      point.mousedownCoords = { x: point.x, y: point.y }
+    })
+  }
+
   if (event.target.classList.contains('segment') || event.target.classList.contains('segment-wrangler')) {
     const pointId = event.target.getAttribute('data-point-id')
     console.log('here!')
@@ -217,6 +237,7 @@ function handleMousedown(args: HandleMouseArgs): State {
 function handleMousemove(args: HandleMoveArgs) {
   let data = args.data
   let event = args.event
+  let piece = data.pieces.filter(p => p.id == data?.selectedPiece?.id)[0] ?? null
 
   let draw = initSVGCanvas(data)
   const slack = 5
@@ -256,6 +277,53 @@ function handleMousemove(args: HandleMoveArgs) {
       let sparkGuide = SVG().line([-1500, horizontalNeighbor.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
       draw.add(sparkGuide)
     }
+  }
+
+  if (data.resizing && data.selectedPiece) {
+    console.log('resizing!')
+    let domPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
+    const currentWidth = currentCoords.x - parseFloat(domPiece.x().toString())
+    const currentHeight = currentCoords.y - parseFloat(domPiece.y().toString())
+    let points = domPiece.children().filter(child => child.hasClass('anchor'))
+    const offset = {
+      x: piece.mousedownSize.x,
+      y: piece.mousedownSize.y
+    }
+    // Need to do this p3.js style: translate, transform, translate back
+    const pieceCenter = { x: (piece.mousedownSize.width / 2) + piece.mousedownSize.x, y: (piece.mousedownSize.height / 2) + piece.mousedownSize.y }
+    const domPieceCenter = { x: parseFloat(domPiece.width().toString()) / 2, y: parseFloat(domPiece.height().toString()) / 2 }
+    let quadrant = [(pieceCenter.x > currentCoords.x) ? 0 : 1, (pieceCenter.y > currentCoords.y) ? 0 : 1]
+    let pieceDidGrow = {
+      x: (quadrant[0] == 0) ? pieceCenter.x - data.mousedownCoords.x < pieceCenter.x - currentCoords.x : data.mousedownCoords.x + pieceCenter.x < currentCoords.x + pieceCenter.x,
+      y: (quadrant[1] == 0) ? data.mousedownCoords.y + pieceCenter.y < currentCoords.y + pieceCenter.y : pieceCenter.y - data.mousedownCoords.y < pieceCenter.y - currentCoords.y
+    }
+    console.log(pieceCenter)
+    console.log(currentCoords)
+    console.log(quadrant)
+    console.log(pieceDidGrow)
+    // let dX = quadrant[0] == 0 ? -1 * Math.abs(data.mousedownCoords.x - currentCoords.x) : 1 * Math.abs(currentCoords.x - data.mousedownCoords.x)
+    // let dY = quadrant[1] == 0 ? -1 * Math.abs(data.mousedownCoords.y - currentCoords.y) : 1 * Math.abs(currentCoords.y - data.mousedownCoords.y)
+    // let dX = data.mousedownCoords.x - currentCoords.x
+    // let dY = data.mousedownCoords.y - currentCoords.y
+    // let dX = Math.abs(data.mousedownCoords.x - currentCoords.x) * (shrinkOrGrow.x ? -1 : 1)
+    let dX = Math.abs(data.mousedownCoords.x - currentCoords.x) * (pieceDidGrow.x ? 1 : -1) * 2
+    let dY = Math.abs(data.mousedownCoords.y - currentCoords.y) * (pieceDidGrow.x ? 1 : -1) * 2
+
+    console.log(dX)
+    console.log(dY)
+    
+    // 0.5, 1.0, 1.5, etc
+    let scaleX = (piece.mousedownSize.width + (dX)) / piece.mousedownSize.width
+    let scaleY = (piece.mousedownSize.height + dY) / piece.mousedownSize.height
+    
+    console.log(scaleX)
+    console.log(scaleY)
+
+    let currentPiece = data.pieces.filter(p => p.id == data.selectedPiece.id)[0]
+    currentPiece.points.forEach(p => {
+      p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
+      p.y = (scaleY * (p.mousedownCoords.y - pieceCenter.y)) + pieceCenter.y
+    })
   }
 
   if (data.selectedPoint && data.moving) {
@@ -442,6 +510,7 @@ function handleMouseup(args: HandleMouseArgs): State {
   data.moving = false
   data.mousedown = false
   data.pieceMoving = false
+  data.resizing = false
   return data
 }
 

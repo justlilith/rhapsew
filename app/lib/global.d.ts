@@ -8,11 +8,13 @@ interface State {
   menuX: number | null
   menuY: number | null
   mousedown: boolean
+  mousedownCoords?: { x: number, y: number }
   moving: boolean
   panning: boolean
   parent: string
   pieceMoving: boolean
   pieces: PieceT[]
+  resizing: boolean
   selectedPiece: PieceT | null
   selectedPoint: PointT | null
   settingsMenu: boolean
@@ -25,34 +27,36 @@ interface PieceT {
   closed: boolean
   id: string
   mirrorLine: PointT[]
-  offset: { x: number, y: number }
+  mousedownSize: { width: number, height: number, x: number, y: number }
   name: string
+  offset: { x: number, y: number }
   points: PointT[]
 }
 
 interface NewPointArgs {
-  x: number
-  y: number
+  active?: boolean
+  coords?: { x: number, y: number }
+  id: string
+  offset?: { x: number, y: number }
+  pairId?: string
+  parent?: PointT
   pieceId: string
   type?: "anchor" | "control"
-  active?: boolean
-  id: string
-  parent?: PointT
-  coords?: { x: number, y: number }
-  pairId?: string
-  offset?: { x: number, y: number }
+  x: number
+  y: number
 }
 
 
 interface PointT {
-  x: number
-  y: number
-  type: "anchor" | "control"
   active: boolean
   id: string
+  mousedownCoords?: { x: number, y: number }
+  offset: { x: number, y: number }
   parent?: PointT
   pairId?: string
-  offset: { x: number, y: number }
+  type: "anchor" | "control"
+  x: number
+  y: number
 }
 
 interface EventTarget {
@@ -66,13 +70,13 @@ interface EventTarget {
 
 
 interface AddPointArgs {
-  event: MouseEvent
-  data: State
-  pieceId: string
-  parent?: PointT
-  type?: "control" | "anchor"
   coords?: { x: number, y: number }
+  data: State
+  event: MouseEvent
   pairId?: string
+  parent?: PointT
+  pieceId: string
+  type?: "control" | "anchor"
 }
 
 interface FindAngleArgs {
@@ -94,13 +98,13 @@ interface GenerateBoundingBoxArgs {
 
 interface GeneratePieceArgs {
   data: State
-  piece: PieceT
   mirrored?: boolean
+  piece: PieceT
 }
 
 interface HandleClickArgs {
-  event: MouseEvent
   data: State
+  event: MouseEvent
 }
 
 interface HandleKeyboardArgs {
@@ -137,12 +141,13 @@ interface RenderPointArgs {
   data: State
   point: PointT
   piece: PieceT
+  renderedPiece: G
 }
 
 interface SetMirrorLineArgs {
+  clear?: boolean
   data: State
-  piece?: PieceT
   event?: Event
   resetPoint?: PointT
-  clear?: boolean
+  piece?: PieceT
 }

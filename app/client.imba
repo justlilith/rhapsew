@@ -17,11 +17,13 @@ let state\State =
 		menuX: null
 		menuY: null
 		mousedown: false
+		mousedownCoords: null
 		moving: null
 		panning: false
 		parent: '#canvas'
 		pieceMoving: false
 		pieces: []
+		resizing: false
 		selectedPiece: null
 		selectedPoint: null
 		settingsMenu: false
