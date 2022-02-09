@@ -184,7 +184,6 @@ function handleMousedown(args: HandleMouseArgs): State {
           if (dp.inside(currentCoords.x, currentCoords.y)) {
             data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
             data.pieceMoving = true
-            console.log('inside!')
             data.selectedPiece.points.forEach(point => {
               let offset = {
                 x: point.x - currentCoords.x
@@ -280,45 +279,24 @@ function handleMousemove(args: HandleMoveArgs) {
   }
 
   if (data.resizing && data.selectedPiece) {
-    console.log('resizing!')
+    console.info(`Rhapsew [Info]: Resizing!`)
     let domPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
     const currentWidth = currentCoords.x - parseFloat(domPiece.x().toString())
     const currentHeight = currentCoords.y - parseFloat(domPiece.y().toString())
-    let points = domPiece.children().filter(child => child.hasClass('anchor'))
-    const offset = {
-      x: piece.mousedownSize.x,
-      y: piece.mousedownSize.y
-    }
-    // Need to do this p3.js style: translate, transform, translate back
-    const pieceCenter = { x: (piece.mousedownSize.width / 2) + piece.mousedownSize.x, y: (piece.mousedownSize.height / 2) + piece.mousedownSize.y }
     const domPieceCenter = { x: parseFloat(domPiece.width().toString()) / 2, y: parseFloat(domPiece.height().toString()) / 2 }
-    let quadrant = [(pieceCenter.x > currentCoords.x) ? 0 : 1, (pieceCenter.y > currentCoords.y) ? 0 : 1]
+    const pieceCenter = { x: (piece.mousedownSize.width / 2) + piece.mousedownSize.x, y: (piece.mousedownSize.height / 2) + piece.mousedownSize.y }
+    let quadrant = [(pieceCenter.x > data.mousedownCoords.x) ? 0 : 1, (pieceCenter.y > data.mousedownCoords.y) ? 0 : 1]
     let pieceDidGrow = {
       x: (quadrant[0] == 0) ? pieceCenter.x - data.mousedownCoords.x < pieceCenter.x - currentCoords.x : data.mousedownCoords.x + pieceCenter.x < currentCoords.x + pieceCenter.x,
-      y: (quadrant[1] == 0) ? data.mousedownCoords.y + pieceCenter.y < currentCoords.y + pieceCenter.y : pieceCenter.y - data.mousedownCoords.y < pieceCenter.y - currentCoords.y
+      y: (quadrant[1] == 0) ? pieceCenter.y - data.mousedownCoords.y < pieceCenter.y - currentCoords.y : data.mousedownCoords.y + pieceCenter.y < currentCoords.y + pieceCenter.y
     }
-    console.log(pieceCenter)
-    console.log(currentCoords)
-    console.log(quadrant)
-    console.log(pieceDidGrow)
-    // let dX = quadrant[0] == 0 ? -1 * Math.abs(data.mousedownCoords.x - currentCoords.x) : 1 * Math.abs(currentCoords.x - data.mousedownCoords.x)
-    // let dY = quadrant[1] == 0 ? -1 * Math.abs(data.mousedownCoords.y - currentCoords.y) : 1 * Math.abs(currentCoords.y - data.mousedownCoords.y)
-    // let dX = data.mousedownCoords.x - currentCoords.x
-    // let dY = data.mousedownCoords.y - currentCoords.y
-    // let dX = Math.abs(data.mousedownCoords.x - currentCoords.x) * (shrinkOrGrow.x ? -1 : 1)
     let dX = Math.abs(data.mousedownCoords.x - currentCoords.x) * (pieceDidGrow.x ? 1 : -1) * 2
-    let dY = Math.abs(data.mousedownCoords.y - currentCoords.y) * (pieceDidGrow.x ? 1 : -1) * 2
+    let dY = Math.abs(data.mousedownCoords.y - currentCoords.y) * (pieceDidGrow.y ? 1 : -1) * 2
 
-    console.log(dX)
-    console.log(dY)
-    
     // 0.5, 1.0, 1.5, etc
-    let scaleX = (piece.mousedownSize.width + (dX)) / piece.mousedownSize.width
+    let scaleX = (piece.mousedownSize.width + dX) / piece.mousedownSize.width
     let scaleY = (piece.mousedownSize.height + dY) / piece.mousedownSize.height
     
-    console.log(scaleX)
-    console.log(scaleY)
-
     let currentPiece = data.pieces.filter(p => p.id == data.selectedPiece.id)[0]
     currentPiece.points.forEach(p => {
       p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
