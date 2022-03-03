@@ -3,10 +3,17 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as AppOps from '$lib/ts/helpers/appOps'
 
 tag app-top-bar
+	def toggleMenu(data, menuItem)
+		if data.topMenu !== menuItem
+			data.topMenu = menuItem
+		else
+			data.topMenu = null
+		return data
+
 	<self.self>
 		<span.logo> "Rhapsew"
 		<section.menu>
-			<div.menu-item>
+			<div.menu-item @click=(data = toggleMenu(data, 'tools'))>
 				<button>
 					<span.material-icons-outlined> "construction"
 					<span> "Tools"
@@ -26,7 +33,7 @@ tag app-top-bar
 				<button>
 					<span.material-icons-outlined> "file_download"
 					<span> "Export"
-			<div.menu-item @click=(do (data.settingsMenu = !data.settingsMenu))>
+			<div.menu-item @click=(data = toggleMenu(data, 'settings'))>
 				<button>
 					<span.material-icons-outlined> "settings"
 					<span> "Settings"

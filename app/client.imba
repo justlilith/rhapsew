@@ -2,6 +2,7 @@ import app-statusbar from '$lib/components/app-statusbar'
 import app-canvas from '$lib/components/app-canvas'
 import app-top-bar from '$lib/components/app-top-bar'
 import settings-menu from '$lib/components/settings-menu'
+import tools-menu from '$lib/components/tools-menu'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import * as History from '$lib/ts/helpers/HistoryManager'
 import * as Utilities from '$lib/ts/helpers/utilities'
@@ -10,10 +11,11 @@ let state\State =
 	{
 		anchorClicked: false
 		canvasClicked: false
+		contextMenu: false
 		currentCoords: null
 		currentTheme: 'dark'
+		currentTool: "anchor"
 		dpi: 96
-		menu: false
 		menuX: null
 		menuY: null
 		mousedown: false
@@ -26,8 +28,8 @@ let state\State =
 		resizing: false
 		selectedPiece: null
 		selectedPoint: null
-		settingsMenu: false
 		status: "Idle"
+		topMenu: null
 		units: 'imperial'
 		zoom: 1
 	}
@@ -44,12 +46,19 @@ tag app
 		let test = Utilities.fetchFromStorage 'data'
 		test.error ? console.log(test.error) : state = test.fetched
 
-	<self.app.{state.currentTheme}>
+	<self
+	.app
+	.{state.currentTheme}
+	.{state.panning == true ? 'panning' : null}>
 		<header>
 			<app-top-bar bind=state>
-			if state..settingsMenu
+			if state..topMenu == 'settings'
 				<settings-menu[y@in:-300px y@out:-500px] bind=state ease>
-		<section.content>
+			if state..topMenu == 'tools'
+				<tools-menu[y@in:-300px y@out:-500px] bind=state ease>
+		<section.content
+		.{state.currentTool == 'anchor' ? 'anchor' : (state.currentTool == 'piece' ? 'piece' : (state.currentTool == 'pan' ? 'pan' : null))}
+		>
 			<app-canvas bind=state>
 		<footer>
 			<app-statusbar bind=state>
@@ -60,8 +69,11 @@ imba.mount <app>
 
 global css html
 	ff:sans
-css .app d:flex fld:column m:auto ta:left min-height:100vh
-	.content flg:100 d:flex fld:column
 
+css	.app d:flex fld:column m:auto ta:left min-height:100vh
+css .piece cursor:cell
+css .pan cursor:grab
+css .panning cursor:grabbing
+css .content flg:100 d:flex fld:column
 css .dark bg:gray7 c:white
 css .light bg:gray2 c:black

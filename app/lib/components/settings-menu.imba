@@ -19,7 +19,7 @@ tag settings-menu
 		<button @click=(do (data.currentTheme = "dark")) .{data.currentTheme == "dark" ? "enabled" : "disabled"}> "Dark"
 		<button @click=(do (data.currentTheme = "light")) .{data.currentTheme == "light" ? "enabled" : "disabled"}> "Light"
 
-css .self c:white bgc:black zi:10 pos:relative m:0px p:1em
+css .self c:white bgc:black zi:30 m:0px p:1em pos:absolute w:calc(100% - 2em)
 	input bgc:black bd:thin solid gray2 c:gray2 p:0.5em
 	button bd:none bd:thin solid gray2 p:0.5em
 	button.enabled c:black bgc:gray2 fw:700

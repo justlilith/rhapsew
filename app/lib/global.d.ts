@@ -1,10 +1,11 @@
 interface State {
   anchorClicked: boolean
   canvasClicked: boolean
+  contextMenu: boolean
   currentCoords: { x: number, y: number }
   currentTheme: string
+  currentTool: "anchor" | "piece" | "annotate" | "pan"
   dpi: number
-  menu: boolean
   menuX: number | null
   menuY: number | null
   mousedown: boolean
@@ -17,8 +18,8 @@ interface State {
   resizing: boolean
   selectedPiece: PieceT | null
   selectedPoint: PointT | null
-  settingsMenu: boolean
   status: string
+  topMenu: "settings" | "tools" | null
   units: string
   zoom: number
 }

@@ -247,7 +247,7 @@ function handleMousemove(args: HandleMoveArgs) {
 
   draw.find('.spark-guide').forEach(element => element.remove())
 
-  if (!data.menu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
+  if (!data.contextMenu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
     draw.find('.activeLine').forEach(element => element.remove())
     draw.find('.spark-guide').forEach(element => element.remove())
 
@@ -296,7 +296,7 @@ function handleMousemove(args: HandleMoveArgs) {
     // 0.5, 1.0, 1.5, etc
     let scaleX = (piece.mousedownSize.width + dX) / piece.mousedownSize.width
     let scaleY = (piece.mousedownSize.height + dY) / piece.mousedownSize.height
-    
+
     let currentPiece = data.pieces.filter(p => p.id == data.selectedPiece.id)[0]
     currentPiece.points.forEach(p => {
       p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
@@ -540,16 +540,38 @@ function shallowCopy(arg) {
   return JSON.parse(JSON.stringify(arg))
 }
 
+function switchTools(args): State {
+  let data = args.data
+		switch (args.tool) {
+			case "anchor":
+				data.currentTool = "anchor"
+				data.status = "Anchor"
+				data.topMenu = null
+				break
+			case "piece":
+				data.currentTool = "piece"
+				data.status = "Piece"
+				data.topMenu = null
+				break
+			case "annotate":
+				data.currentTool = "annotate"
+				data.status = "Annotate"
+				data.topMenu = null
+				break
+    }
+  return data
+}
+
 function toggleContextMenu(args) {
   switch (args.state) {
     case 'on':
-      args.data.menu = true
+      args.data.contextMenu = true
       args.data.menuX = args.x ?? 0
       args.data.menuY = args.y ?? 0
       break
     case 'off':
     default:
-      args.data.menu = false
+      args.data.contextMenu = false
   }
   return args.data
 }
@@ -569,6 +591,7 @@ export {
   , initSVGCanvas
   , pan
   , shallowCopy
+  , switchTools
   , toggleContextMenu
   , writeToStatus
 }
