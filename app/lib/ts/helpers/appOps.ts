@@ -78,11 +78,12 @@ function handleMousedown(args: HandleMouseArgs): State {
   let event = args.event
   let draw = initSVGCanvas(data)
   let currentCoords = draw.point(event.clientX, event.clientY)
+  let classesAtPoint = document.elementsFromPoint(event.clientX, event.clientY).map(el=> el.classList.toString().split(" ")).flat()
 
   console.info(`Rhapsew [Info]: Mousedown`)
   data.mousedown = true
 
-  if (event.target.classList.contains(`anchor`)) {
+  if (classesAtPoint.includes(`anchor`) && data.currentTool == "anchor") {
     switch (event.button) {
       case 2: {
         data.anchorClicked = true
@@ -128,7 +129,7 @@ function handleMousedown(args: HandleMouseArgs): State {
 
   console.log(event.target.classList)
 
-  if (event.target.classList.contains('bounding-box-handle')) {
+  if (classesAtPoint.includes('bounding-box-handle') && data.currentTool == "piece") {
     console.log('handle!')
     data.resizing = true
     data.moving = false

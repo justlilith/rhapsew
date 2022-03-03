@@ -71,7 +71,7 @@ global css html
 	ff:sans
 
 css	.app d:flex fld:column m:auto ta:left min-height:100vh
-css .piece cursor:cell
+css .anchor cursor:crosshair
 css .pan cursor:grab
 css .panning cursor:grabbing
 css .content flg:100 d:flex fld:column
