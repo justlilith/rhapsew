@@ -299,10 +299,19 @@ function handleMousemove(args: HandleMoveArgs) {
     let scaleY = (piece.mousedownSize.height + dY) / piece.mousedownSize.height
 
     let currentPiece = data.pieces.filter(p => p.id == data.selectedPiece.id)[0]
-    currentPiece.points.forEach(p => {
-      p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
-      p.y = (scaleY * (p.mousedownCoords.y - pieceCenter.y)) + pieceCenter.y
-    })
+
+    console.log(data.lockScale)
+    if (data.lockScale) {
+      currentPiece.points.forEach(p => {
+        p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
+        p.y = (scaleX * (p.mousedownCoords.y - pieceCenter.y)) + pieceCenter.y
+      })
+    } else {
+      currentPiece.points.forEach(p => {
+        p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
+        p.y = (scaleY * (p.mousedownCoords.y - pieceCenter.y)) + pieceCenter.y
+      })
+    }
   }
 
   if (data.selectedPoint && data.moving) {

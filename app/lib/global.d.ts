@@ -6,6 +6,7 @@ interface State {
   currentTheme: string
   currentTool: "anchor" | "piece" | "annotate" | "pan"
   dpi: number
+  lockScale: boolean
   menuX: number | null
   menuY: number | null
   mousedown: boolean

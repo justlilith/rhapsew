@@ -421,6 +421,7 @@ function setMirrorLine(args: SetMirrorLineArgs) {
 function wipe(data: State) {
   const draw = AppOps.initSVGCanvas(data)
   draw.find('.rhapsew-element').forEach(element => element.remove())
+  // Utilities.saveToStorage({})
 }
 
 

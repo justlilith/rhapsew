@@ -16,6 +16,7 @@ let state\State =
 		currentTheme: 'dark'
 		currentTool: "anchor"
 		dpi: 96
+		lockScale: true
 		menuX: null
 		menuY: null
 		mousedown: false
