@@ -78,16 +78,22 @@ function handleMousedown(args: HandleMouseArgs): State {
   let event = args.event
   let draw = initSVGCanvas(data)
   let currentCoords = draw.point(event.clientX, event.clientY)
-  let classesAtPoint = document.elementsFromPoint(event.clientX, event.clientY).map(el=> el.classList.toString().split(" ")).flat()
+  let classesAtPoint = document
+  .elementsFromPoint(event.clientX, event.clientY)
+  .map(el=> el.classList.toString().split(" "))
+  .flat()
+  .filter(str => str != "")
 
   console.info(`Rhapsew [Info]: Mousedown`)
+  // console.info(classesAtPoint)
   data.mousedown = true
+  data.lockScale = true
 
-  if (classesAtPoint.includes(`anchor`) && data.currentTool == "anchor") {
+  if (event.target.classList.contains(`anchor`)) {
     switch (event.button) {
       case 2: {
-        data.anchorClicked = true
-        data.canvasClicked = false
+        data.anchorClicked = false
+        data.canvasClicked = true
         data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
         let pieceId: string = event.target.getAttribute('data-pieceId')
@@ -98,8 +104,8 @@ function handleMousedown(args: HandleMouseArgs): State {
       }
       case 0:
       default: {
-        data.canvasClicked = true
-        data.anchorClicked = false
+        data.anchorClicked = true
+        data.canvasClicked = false
         data = toggleContextMenu({ data, state: 'off', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
 
@@ -127,7 +133,7 @@ function handleMousedown(args: HandleMouseArgs): State {
     }
   }
 
-  console.log(event.target.classList)
+  // console.log(event.target.classList)
 
   if (classesAtPoint.includes('bounding-box-handle') && data.currentTool == "piece") {
     console.log('handle!')
@@ -238,8 +244,8 @@ function handleMousemove(args: HandleMoveArgs) {
   let data = args.data
   let event = args.event
   let piece = data.pieces.filter(p => p.id == data?.selectedPiece?.id)[0] ?? null
-
   let draw = initSVGCanvas(data)
+
   const slack = 5
   const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
   const allPoints = data.pieces.map(piece => piece.points).flat()
@@ -300,7 +306,6 @@ function handleMousemove(args: HandleMoveArgs) {
 
     let currentPiece = data.pieces.filter(p => p.id == data.selectedPiece.id)[0]
 
-    console.log(data.lockScale)
     if (data.lockScale) {
       currentPiece.points.forEach(p => {
         p.x = (scaleX * (p.mousedownCoords.x - pieceCenter.x)) + pieceCenter.x
@@ -346,7 +351,7 @@ function handleMousemove(args: HandleMoveArgs) {
     })
   }
 
-  if (event.ctrlKey && data.selectedPoint && event.button == 0) {
+  if (event.ctrlKey && data.selectedPoint && event.button == 0 && data.anchorClicked) {
     // data.selectedPiece.points
     /* 
     * How do you wanna do this?
@@ -388,7 +393,7 @@ function handleMousemove(args: HandleMoveArgs) {
     let previousSegment = PieceOps.findPreviousSegment({ data, point: currentPoint })
     let previousSegmentIndex = data.selectedPiece.points.indexOf(previousSegment)
 
-    const previousPositionPoint = (HistoryManager.previous() as State)
+    const previousPositionPoint = (HistoryManager.previous() as State ?? data)
       .selectedPiece
       .points
       .filter(point => point.id == currentPoint?.id)[0];

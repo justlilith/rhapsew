@@ -64,6 +64,7 @@ tag app-canvas
 	@hotkey('ctrl+y')=(do (PieceOps.wipe data; HistoryManager.redo!))
 	# @hotkey('space')=(do (data.currentTool = 'pan'))
 	@hotkey('space').repeat=(do (if data.mousedown then data.panning = true; data.status = 'Panning'))
+	@hotkey('ctrl').repeat=(do (if data.mousedown then data.lockScale = false else data.lockScale = true))
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 

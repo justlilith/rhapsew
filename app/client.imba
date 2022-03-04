@@ -46,6 +46,7 @@ tag app
 	def mount
 		let test = Utilities.fetchFromStorage 'data'
 		test.error ? console.log(test.error) : state = test.fetched
+		History.set state
 
 	<self
 	.app
