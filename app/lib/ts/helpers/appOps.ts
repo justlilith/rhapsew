@@ -79,10 +79,10 @@ function handleMousedown(args: HandleMouseArgs): State {
   let draw = initSVGCanvas(data)
   let currentCoords = draw.point(event.clientX, event.clientY)
   let classesAtPoint = document
-  .elementsFromPoint(event.clientX, event.clientY)
-  .map(el=> el.classList.toString().split(" "))
-  .flat()
-  .filter(str => str != "")
+    .elementsFromPoint(event.clientX, event.clientY)
+    .map(el => el.classList.toString().split(" "))
+    .flat()
+    .filter(str => str != "")
 
   console.info(`Rhapsew [Info]: Mousedown`)
   // console.info(classesAtPoint)
@@ -245,10 +245,10 @@ function handleMousemove(args: HandleMoveArgs) {
   let event = args.event
   let piece = data.pieces.filter(p => p.id == data?.selectedPiece?.id)[0] ?? null
   let draw = initSVGCanvas(data)
-
+  
   const slack = 5
   const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
-  const allPoints = data.pieces.map(piece => piece.points).flat()
+  const allPoints = data.pieces.map(piece => piece.points.filter(p => p.type == "anchor")).flat()
   const verticalNeighbor = allPoints.filter(point => point.x + slack >= currentCoords.x && point.x - slack <= currentCoords.x && point.id != data.selectedPoint?.id)[0]
   const horizontalNeighbor = allPoints.filter(point => point.y + slack >= currentCoords.y && point.y - slack <= currentCoords.y && point.id != data.selectedPoint?.id)[0]
 
@@ -285,7 +285,7 @@ function handleMousemove(args: HandleMoveArgs) {
     }
   }
 
-  if (data.resizing && data.selectedPiece) {
+  if (data.resizing && piece) {
     console.info(`Rhapsew [Info]: Resizing!`)
     let domPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
     const currentWidth = currentCoords.x - parseFloat(domPiece.x().toString())
@@ -321,10 +321,27 @@ function handleMousemove(args: HandleMoveArgs) {
 
   if (data.selectedPoint && data.moving) {
     let id = data.selectedPoint.id
-    data.selectedPiece.points = data.selectedPiece.points.map(point => {
+    piece.points = piece.points.map(point => {
+      /**
+       * TODO:
+       * We need to calc the offset from this point to each of the child (control) points
+       */
+      if (point?.parent?.id == id) {
+        let pointX = verticalNeighbor?.x ?? currentCoords.x
+        let pointY = horizontalNeighbor?.y ?? currentCoords.y
+        let offset = {
+          x: pointX - point.x,
+          y: pointY - point.y
+        }
+        point.x = pointX + offset.x
+        point.y = pointY + offset.y
+        console.log(offset)
+      }
+      
       if (point.id == id) {
         point.x = verticalNeighbor?.x ?? currentCoords.x
         point.y = horizontalNeighbor?.y ?? currentCoords.y
+
         draw.find('.spark-guide').forEach(element => element.remove())
 
         if (verticalNeighbor) {
@@ -545,7 +562,7 @@ function pan(args: PanArgs) {
   let currentCoords = args.currentCoords
   let draw = initSVGCanvas(args.data)
   let viewBox: string = draw.attr('viewBox')
-  let viewBoxArray = viewBox.split(' ').map(coord => parseInt(coord))
+  let viewBoxArray = viewBox.split(' ').map(coord => parseFloat(coord))
   viewBoxArray[0] = viewBoxArray[0] + data.currentCoords.x - currentCoords.x
   viewBoxArray[1] = viewBoxArray[1] + data.currentCoords.y - currentCoords.y
   draw.attr('viewBox', viewBoxArray.join(' '))
@@ -557,23 +574,23 @@ function shallowCopy(arg) {
 
 function switchTools(args): State {
   let data = args.data
-		switch (args.tool) {
-			case "anchor":
-				data.currentTool = "anchor"
-				data.status = "Anchor"
-				data.topMenu = null
-				break
-			case "piece":
-				data.currentTool = "piece"
-				data.status = "Piece"
-				data.topMenu = null
-				break
-			case "annotate":
-				data.currentTool = "annotate"
-				data.status = "Annotate"
-				data.topMenu = null
-				break
-    }
+  switch (args.tool) {
+    case "anchor":
+      data.currentTool = "anchor"
+      data.status = "Anchor"
+      data.topMenu = null
+      break
+    case "piece":
+      data.currentTool = "piece"
+      data.status = "Piece"
+      data.topMenu = null
+      break
+    case "annotate":
+      data.currentTool = "annotate"
+      data.status = "Annotate"
+      data.topMenu = null
+      break
+  }
   return data
 }
 

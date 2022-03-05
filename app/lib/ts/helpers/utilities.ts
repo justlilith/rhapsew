@@ -44,10 +44,10 @@ function findExtents(args) {
   let data: State = args.data
   let piece: G = args.piece
   return {
-    x: parseInt(piece.x().toString())
-    , y: parseInt(piece.y().toString())
-    , width: parseInt(piece.width().toString())
-    , height: parseInt(piece.height().toString()) }
+    x: parseFloat(piece.x().toString())
+    , y: parseFloat(piece.y().toString())
+    , width: parseFloat(piece.width().toString())
+    , height: parseFloat(piece.height().toString()) }
 }
 
 
