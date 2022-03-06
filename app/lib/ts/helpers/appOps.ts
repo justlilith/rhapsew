@@ -242,7 +242,6 @@ function handleMousedown(args: HandleMouseArgs): State {
       , y: point.y - currentCoords.y
     }
     point.mousedownCoords = { x: point.x, y: point.y }
-    console.log(point)
   })
 
 
