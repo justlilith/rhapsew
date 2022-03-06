@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid'
 import * as PieceOps from './helpers/pieceOps'
 
 class Piece {
-  constructor(args:PieceArgs) {
+  constructor(args: PieceArgs) {
     const id = nanoid()
     this.id = id
     this.points = []
@@ -20,7 +20,7 @@ class Piece {
 }
 
 class Point {
-  constructor(args:NewPointArgs) {
+  constructor(args: NewPointArgs) {
     this.x = args.x
     this.y = args.y
     this.type = args.type ?? "anchor"
@@ -30,7 +30,7 @@ class Point {
     this.parent ??= args.parent
     this.pairId = args.pairId ?? null
     this.offset = args.offset ?? null
-    this.mousedownCoords = null
+    this.mousedownCoords = { x: null, y: null }
   }
   x: number
   y: number

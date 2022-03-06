@@ -144,11 +144,10 @@ function handleMousedown(args: HandleMouseArgs): State {
     const domPiece = draw.find(`[data-piece-id="${data.selectedPiece.id}"]`)[0]
     data.pieces.filter(p => p.id == data.selectedPiece.id)[0].mousedownSize = { width: parseFloat(domPiece.width().toString()), height: parseFloat(domPiece.height().toString()), x: parseFloat(domPiece.x().toString()), y: parseFloat(domPiece.y().toString()) }
     data.pieces.filter(p => p.id == data.selectedPiece.id)[0].points.forEach(point => {
-      let offset = {
+      point.offset = {
         x: point.x - currentCoords.x
         , y: point.y - currentCoords.y
       }
-      point.offset = offset
       point.mousedownCoords = { x: point.x, y: point.y }
     })
   }
@@ -192,11 +191,12 @@ function handleMousedown(args: HandleMouseArgs): State {
             data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
             data.pieceMoving = true
             data.selectedPiece.points.forEach(point => {
-              let offset = {
+              point.offset = {
                 x: point.x - currentCoords.x
                 , y: point.y - currentCoords.y
               }
-              point.offset = offset
+              point.mousedownCoords.x = point.x
+              point.mousedownCoords.y = point.y
             })
           }
         })
@@ -236,6 +236,16 @@ function handleMousedown(args: HandleMouseArgs): State {
     }
   }
 
+  data?.selectedPiece?.points.forEach(point => {
+    point.offset = {
+      x: point.x - currentCoords.x
+      , y: point.y - currentCoords.y
+    }
+    point.mousedownCoords = { x: point.x, y: point.y }
+    console.log(point)
+  })
+
+
   return data
 }
 
@@ -245,7 +255,7 @@ function handleMousemove(args: HandleMoveArgs) {
   let event = args.event
   let piece = data.pieces.filter(p => p.id == data?.selectedPiece?.id)[0] ?? null
   let draw = initSVGCanvas(data)
-  
+
   const slack = 5
   const currentCoords = SVG(`svg`).point(event.clientX, event.clientY)
   const allPoints = data.pieces.map(piece => piece.points.filter(p => p.type == "anchor")).flat()
@@ -326,18 +336,7 @@ function handleMousemove(args: HandleMoveArgs) {
        * TODO:
        * We need to calc the offset from this point to each of the child (control) points
        */
-      if (point?.parent?.id == id) {
-        let pointX = verticalNeighbor?.x ?? currentCoords.x
-        let pointY = horizontalNeighbor?.y ?? currentCoords.y
-        let offset = {
-          x: pointX - point.x,
-          y: pointY - point.y
-        }
-        point.x = pointX + offset.x
-        point.y = pointY + offset.y
-        console.log(offset)
-      }
-      
+
       if (point.id == id) {
         point.x = verticalNeighbor?.x ?? currentCoords.x
         point.y = horizontalNeighbor?.y ?? currentCoords.y
@@ -353,6 +352,13 @@ function handleMousemove(args: HandleMoveArgs) {
           draw.add(sparkGuide)
         }
       }
+      if (point?.parent?.id == id) {
+        let pointX = verticalNeighbor?.x ?? currentCoords.x
+        let pointY = horizontalNeighbor?.y ?? currentCoords.y
+        point.x = pointX + point.offset.x
+        point.y = pointY + point.offset.y
+      }
+
       return point
     })
   }
