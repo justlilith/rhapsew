@@ -330,7 +330,7 @@ function renderPiece(args: RenderPieceArgs): void {
       .line(mirrorPath)
       .stroke({ color: 'hsla(30, 100%, 50%, 0.5)', width: 2 * (1 / data.zoom) })
       .data("mirror-line-id", piece.id)
-      .addClass('control-line')
+      .addClass('mirror-line')
       .addClass('rhapsew-element')
 
     draw.add(mirrorLine)
@@ -412,6 +412,9 @@ function setMirrorLine(args: SetMirrorLineArgs) {
   }
   if (clear) {
     piece.mirrorLine = []
+    const draw = AppOps.initSVGCanvas(data)
+    draw.find(`[data-mirror-line-id="${piece.id}"]`)
+    .forEach(el => el.remove())
   }
 
   return data

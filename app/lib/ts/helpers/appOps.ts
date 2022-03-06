@@ -90,10 +90,10 @@ function handleMousedown(args: HandleMouseArgs): State {
   data.lockScale = true
 
   if (event.target.classList.contains(`anchor`)) {
+    data.anchorClicked = true
+    data.canvasClicked = false
     switch (event.button) {
       case 2: {
-        data.anchorClicked = false
-        data.canvasClicked = true
         data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
         let pieceId: string = event.target.getAttribute('data-pieceId')
@@ -104,8 +104,6 @@ function handleMousedown(args: HandleMouseArgs): State {
       }
       case 0:
       default: {
-        data.anchorClicked = true
-        data.canvasClicked = false
         data = toggleContextMenu({ data, state: 'off', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
 
