@@ -18,7 +18,8 @@ tag app-canvas
 			# PieceOps.wipe data
 			unless data.pieces.length == 0
 				for piece of data.pieces
-					PieceOps.renderPiece {piece, data}
+					if piece.changed
+						PieceOps.renderPiece {piece, data}
 		# setInterval(&,1000) do
 		# 	console.log data
 

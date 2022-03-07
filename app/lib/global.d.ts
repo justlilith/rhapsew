@@ -26,6 +26,7 @@ interface State {
 }
 
 interface PieceT {
+  changed: boolean
   closed: boolean
   id: string
   mirrorLine: PointT[]

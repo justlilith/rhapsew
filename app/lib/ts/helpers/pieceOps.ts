@@ -14,7 +14,7 @@ function addPiece(args: PieceArgs): State {
 
   console.info('Rhapsew [Info]: Adding a new piece')
 
-  let newPiece: PieceT = { points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null } // wait nvm
+  let newPiece: PieceT = { changed: true, points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null } // wait nvm
   newPiece.points[0] = addPoint({ data, event, pieceId: newPiece.id }) // trying this out
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
@@ -299,11 +299,12 @@ function generatePiece(args: GeneratePieceArgs): G {
 function renderPiece(args: RenderPieceArgs): void {
   let data = args.data
   let piece = args.piece
-
   const draw = AppOps.initSVGCanvas(data)
-
+  
   data = setMirrorLine({ data, piece })
-
+  
+  console.info(`Rhapsew [Info]: Rerendering!`)
+  
   let renderedPiece = generatePiece({ data, piece })
 
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
@@ -339,6 +340,8 @@ function renderPiece(args: RenderPieceArgs): void {
   piece.points.forEach(point => {
     renderPoint({ id: point.id, data, point, piece, renderedPiece })
   })
+
+  piece.changed = false
 }
 
 

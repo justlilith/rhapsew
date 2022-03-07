@@ -129,12 +129,12 @@ function handleMousedown(args: HandleMouseArgs): State {
         data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
       }
     }
+    data.selectedPiece.changed = true
   }
 
   // console.log(event.target.classList)
 
   if (classesAtPoint.includes('bounding-box-handle') && data.currentTool == "piece") {
-    console.log('handle!')
     data.resizing = true
     data.moving = false
     data.pieceMoving = false
@@ -148,13 +148,15 @@ function handleMousedown(args: HandleMouseArgs): State {
       }
       point.mousedownCoords = { x: point.x, y: point.y }
     })
+    data.selectedPiece.changed = true
   }
 
-  if (event.target.classList.contains('segment') || event.target.classList.contains('segment-wrangler')) {
+  if ((event.target.classList.contains('segment')
+    || event.target.classList.contains('segment-wrangler'))
+    && data.selectedPiece
+    && data.currentTool == "anchor"
+  ) {
     const pointId = event.target.getAttribute('data-point-id')
-    console.log('here!')
-    console.log(event.target)
-    console.log(event.target.getAttribute('data-point-id'))
     let domSegment = draw.find(`[data-starting-point-id="${pointId}"]`)[0]
     let newPoint = PieceOps.addPoint({
       event
@@ -166,15 +168,19 @@ function handleMousedown(args: HandleMouseArgs): State {
     const after = data.selectedPiece.points.slice(data.selectedPiece.points.indexOf(data.selectedPiece.points.filter(point => point.id == pointId)[0]) + 1, data.selectedPiece.points.length + 1)
     data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = [...previous, newPoint, ...after]
     data.selectedPoint = data.selectedPiece.points.filter(point => point.id == newPoint.id)[0]
+    data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].changed = true
   }
 
-  if (event.target.classList.contains('svg') || event.target.classList.contains('spark-guide')) {
+  if (event.target.classList.contains('svg')
+    || event.target.classList.contains('spark-guide')
+  ) {
     data.canvasClicked = true
     data.anchorClicked = false
     switch (event.button) {
       case 2: // right-click
         data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
         draw.find('.activeLine').forEach(element => element.remove())
+        data.selectedPiece ? data.selectedPiece.changed = true : null
         break
       case 0:
       default: // left-click
@@ -209,6 +215,7 @@ function handleMousedown(args: HandleMouseArgs): State {
             data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points = points
             data.selectedPiece.points = points
             data.selectedPoint = data.selectedPiece.points.slice(-1)[0]
+            data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].changed = true
           }
           else { // piece is closed
             data.selectedPiece = null
@@ -217,6 +224,7 @@ function handleMousedown(args: HandleMouseArgs): State {
             domPiece.forEach(dp => {
               if (dp.inside(currentCoords.x, currentCoords.y)) {
                 data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
+                data.selectedPiece.changed = true
               }
             })
             data.pieces.forEach(piece => {
@@ -290,6 +298,8 @@ function handleMousemove(args: HandleMoveArgs) {
       let sparkGuide = SVG().line([-1500, horizontalNeighbor.y, 1500, horizontalNeighbor.y]).addClass('spark-guide').addClass('rhapsew-element').stroke({ color: "hsl(180, 100%, 50%)" })
       draw.add(sparkGuide)
     }
+
+    piece.changed = true
   }
 
   if (data.resizing && piece) {
@@ -324,6 +334,8 @@ function handleMousemove(args: HandleMoveArgs) {
         p.y = (scaleY * (p.mousedownCoords.y - pieceCenter.y)) + pieceCenter.y
       })
     }
+
+    piece.changed = true
   }
 
   if (data.selectedPoint && data.moving) {
@@ -358,6 +370,8 @@ function handleMousemove(args: HandleMoveArgs) {
 
       return point
     })
+
+    piece.changed = true
   }
 
   if (data.pieceMoving) {
@@ -369,6 +383,8 @@ function handleMousemove(args: HandleMoveArgs) {
       point.y = point.offset.y + currentCoords.y
       return point
     })
+
+    piece.changed = true
   }
 
   if (event.ctrlKey && data.selectedPoint && event.button == 0 && data.anchorClicked) {
@@ -496,6 +512,7 @@ function handleMousemove(args: HandleMoveArgs) {
       }
     }
 
+    piece.changed = true
   }
 
   if (data.panning && data.mousedown && event.buttons == 1) {
@@ -514,7 +531,7 @@ function handleMouseup(args: HandleMouseArgs): State {
   let draw = initSVGCanvas(data)
 
   draw.find('.spark-guide').forEach(element => element.remove())
-  draw.find(`.bounding-box`).forEach(el => {
+  draw.find(`.bounding-box`).concat(draw.find(`.bounding-box-handle`)).forEach(el => {
     if (el.data('bounding-box-id') != data?.selectedPiece?.id) {
       el.remove()
     }
