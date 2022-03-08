@@ -2,6 +2,10 @@
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/035c4e1b-0a20-423d-8bc4-0bb0e5b35cab/deploy-status)](https://app.netlify.com/sites/rhapsew/deploys)
 
+[Live link](https://rhapsew.com)
+
+[Netlify link](https://rhapsew.netlify.app)
+
 ## What
 
 Digital patternmaking app for sewists. Draft a pattern with a simple UI and export it for printing with Inkscape, Illustrator, or other vector software.
