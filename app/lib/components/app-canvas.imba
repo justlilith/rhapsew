@@ -52,6 +52,7 @@ tag app-canvas
 	# @keypress=(console.log)
 	@click=(do (handleClick e))
 	@rhapsewZoom=(do (handleZoom e))
+	@paste=(do(e) (data = await AppOps.pastePiece {data, event: e}) )
 	@contextmenu.prevent=(do (handleClick e))
 	@mousemove=(do (data = AppOps.handleMousemove {data, event: e}))
 	@mousedown=(do (handleMousedown e))
@@ -67,7 +68,8 @@ tag app-canvas
 	@hotkey('space').repeat=(do (if data.mousedown then data.panning = true; data.status = 'Panning'))
 	@hotkey('ctrl').repeat=(do (if data.mousedown then data.lockScale = false else data.lockScale = true))
 	@hotkey('ctrl+c')=(do (data = await AppOps.copyPiece {data, piece:data..selectedPiece}))
-	@hotkey('ctrl+v')=(do (data = await AppOps.pastePiece {data}))
+	# @hotkey('ctrl+v')=(do (window.dispatchEvent(new Event('paste'))) )
+	# @hotkey('ctrl+v')=(do(e) (data = await AppOps.pastePiece {data, event: e}) )
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 

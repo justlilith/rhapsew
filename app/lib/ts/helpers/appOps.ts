@@ -596,14 +596,24 @@ function pan(args: PanArgs) {
 }
 
 async function pastePiece(args: PastePieceArgs) {
-  navigator.clipboard.readText().then(res => console.log(res))
   let data: State = args.data
+  let newPiece: PieceT = null
+  let event = args.event
   data.status = 'Paste'
-  let newPiece: PieceT = await navigator.clipboard.readText()
-    .catch(res => {
-      data.status = res
-      return null
-    })
+  console.log(args.event)
+  try {
+    newPiece = JSON.parse(
+      await navigator.clipboard.readText()
+      .catch(res => {
+        data.status = res
+        return null
+      })
+      )
+  } catch (e) {
+    const clipboardData:string|null = event.clipboardData.getData('Text') || window.clipboardData.getData('Text')
+    data.status = 'Paste'
+    newPiece = JSON.parse(clipboardData)
+  }
   if (newPiece) {
     newPiece.id = nanoid()
     newPiece.points.forEach(point => {

@@ -136,6 +136,7 @@ interface PanArgs {
 
 interface PastePieceArgs{
   data: State
+  event: ClipboardEvent
 }
 
 interface PieceArgs {
