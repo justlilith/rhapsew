@@ -596,6 +596,7 @@ function pan(args: PanArgs) {
 }
 
 async function pastePiece(args: PastePieceArgs) {
+  navigator.clipboard.readText().then(res => console.log(res))
   let data: State = args.data
   data.status = 'Paste'
   let newPiece: PieceT = await navigator.clipboard.readText()
