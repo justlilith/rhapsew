@@ -82,6 +82,11 @@ interface AddPointArgs {
   type?: "control" | "anchor"
 }
 
+interface CopyPieceArgs{
+  data: State
+  piece: PieceT | null
+}
+
 interface FindAngleArgs {
   mode: string
   point1: PointT
@@ -127,6 +132,10 @@ interface HandleMoveArgs {
 interface PanArgs {
   data: State
   currentCoords: { x: number, y: number }
+}
+
+interface PastePieceArgs{
+  data: State
 }
 
 interface PieceArgs {

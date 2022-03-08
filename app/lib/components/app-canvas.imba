@@ -66,6 +66,8 @@ tag app-canvas
 	# @hotkey('space')=(do (data.currentTool = 'pan'))
 	@hotkey('space').repeat=(do (if data.mousedown then data.panning = true; data.status = 'Panning'))
 	@hotkey('ctrl').repeat=(do (if data.mousedown then data.lockScale = false else data.lockScale = true))
+	@hotkey('ctrl+c')=(do (data = await AppOps.copyPiece {data, piece:data..selectedPiece}))
+	@hotkey('ctrl+v')=(do (data = await AppOps.pastePiece {data}))
 	# @hotkey('del')=(do (data = KeyboardOps.deleteKey {data}))
 	>
 

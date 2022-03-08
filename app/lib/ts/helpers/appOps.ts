@@ -1,10 +1,21 @@
-import { SVG } from '@svgdotjs/svg.js'
-import * as PieceOps from '$lib/ts/helpers/pieceOps'
-import type { Element } from '@svgdotjs/svg.js'
 import '@svgdotjs/svg.panzoom.js'
+import { SVG } from '@svgdotjs/svg.js'
+import { nanoid } from 'nanoid'
+import * as PieceOps from '$lib/ts/helpers/pieceOps'
 import * as HistoryManager from '$lib/ts/helpers/HistoryManager'
+import type { Element } from '@svgdotjs/svg.js'
 
 
+
+async function copyPiece(args: CopyPieceArgs) {
+  let data: State = args.data
+  let piece = JSON.stringify(args.piece ?? null)
+  console.info(`Rhapsew [Info]: Copying piece ${args?.piece?.id}!`)
+  data.status = 'Copy'
+  await navigator.clipboard.writeText(piece)
+    .catch(res => data.status = res)
+  return data
+}
 
 function clearScreen(args): State {
   let data: State = args.data
@@ -584,6 +595,28 @@ function pan(args: PanArgs) {
   draw.attr('viewBox', viewBoxArray.join(' '))
 }
 
+async function pastePiece(args: PastePieceArgs) {
+  let data: State = args.data
+  data.status = 'Paste'
+  let newPiece: PieceT = await navigator.clipboard.readText()
+    .catch(res => {
+      data.status = res
+      return null
+    })
+  if (newPiece) {
+    newPiece.id = nanoid()
+    newPiece.points.forEach(point => {
+      point.x += 30
+      point.y += 30
+      return point
+    })
+    newPiece.changed = true
+    data.pieces = data.pieces.concat(newPiece)
+    data.selectedPiece = data.pieces.filter(piece => piece.id == newPiece.id)[0]
+  }
+  return data
+}
+
 function shallowCopy(arg) {
   return JSON.parse(JSON.stringify(arg))
 }
@@ -630,6 +663,7 @@ function writeToStatus() {
 
 export {
   clearScreen
+  , copyPiece
   , exportSvg
   , handleClick
   , handleMousedown
@@ -638,6 +672,7 @@ export {
   , init
   , initSVGCanvas
   , pan
+  , pastePiece
   , shallowCopy
   , switchTools
   , toggleContextMenu
