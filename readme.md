@@ -1,4 +1,12 @@
-# Getting Started
+# Rhapsew
+
+[![Netlify Status](https://api.netlify.com/api/v1/badges/035c4e1b-0a20-423d-8bc4-0bb0e5b35cab/deploy-status)](https://app.netlify.com/sites/rhapsew/deploys)
+
+## What
+
+Digital patternmaking app for sewists. Draft a pattern with a simple UI and export it for printing with Inkscape, Illustrator, or other vector software.
+
+## Misc
 
 This project was bootstrapped with [imba-base-template](https://github.com/imba/imba-base-template).
 
@@ -8,7 +16,7 @@ In the project directory, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.
+Runs Rhapsew in development mode.
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.

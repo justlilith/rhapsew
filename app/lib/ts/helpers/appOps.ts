@@ -610,7 +610,7 @@ async function pastePiece(args: PastePieceArgs) {
       })
       )
   } catch (e) {
-    const clipboardData:string|null = event.clipboardData.getData('Text') || window.clipboardData.getData('Text')
+    const clipboardData:string|null = event.clipboardData.getData('Text')
     data.status = 'Paste'
     newPiece = JSON.parse(clipboardData)
   }
