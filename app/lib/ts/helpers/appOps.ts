@@ -1,12 +1,8 @@
 import { SVG } from '@svgdotjs/svg.js'
 import * as PieceOps from '$lib/ts/helpers/pieceOps'
-// import type { State } from 'app/lib/global'
 import type { Element } from '@svgdotjs/svg.js'
 import '@svgdotjs/svg.panzoom.js'
-import { Point } from '../classes'
 import * as HistoryManager from '$lib/ts/helpers/HistoryManager'
-
-const TOPBARHEIGHT = 30
 
 
 

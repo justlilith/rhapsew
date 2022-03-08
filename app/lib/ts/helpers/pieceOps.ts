@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid'
 import * as History from '$lib/ts/helpers/HistoryManager'
 import * as _ from 'lodash'
 
-const TOPBARHEIGHT = 30
+
 
 function addPiece(args: PieceArgs): State {
   let data: State = { ...args.data }
