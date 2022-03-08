@@ -608,6 +608,7 @@ async function pastePiece(args: PastePieceArgs) {
     newPiece.points.forEach(point => {
       point.x += 30
       point.y += 30
+      point.id = nanoid()
       return point
     })
     newPiece.changed = true
