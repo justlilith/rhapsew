@@ -15,15 +15,15 @@
 
 Digital patternmaking app for sewists. Draft a pattern with a simple UI and export it for printing with Inkscape, Illustrator, or other vector software.
 
-## Misc
+## Misc Info
 
-This project was bootstrapped with [imba-base-template](https://github.com/imba/imba-base-template).
+Rhapsew was bootstrapped with [Imba](https://github.com/imba/imba-base-template). It uses [SVG.js](https://svgjs.dev/) for heavy lifting, as well as the [panZoom plugin](https://github.com/svgdotjs/svg.panzoom.js).
 
-## Available Scripts
+### Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+#### `npm start`
 
 Runs Rhapsew in development mode.
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -31,6 +31,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.
 You will also see any lint errors in the console.
 
-### `npm run build`
+#### `npm run build`
 
 Builds the app for production to the `dist` folder.

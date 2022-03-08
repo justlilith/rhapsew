@@ -567,17 +567,11 @@ function initSVGCanvas(data: State): Element {
       .addClass(`svg`)
       .addClass('rhapsew-element')
       .viewbox('0 0 100 1')
-      // .size('100','100')
       .panZoom({ panning: false, zoomMin: 0.01, zoomMax: 20 })
       .zoom(1)
-    // .animate()
 
     draw.on('zoom', (event) => {
-      // console.log(event)
-      // data.zoom = event.detail.level
-      // draw.fire('rhapsewZoom', event)
       window.dispatchEvent(new CustomEvent('rhapsewZoom', event))
-
     })
   }
   return draw
