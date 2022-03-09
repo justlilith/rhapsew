@@ -405,6 +405,7 @@ function setMirrorLine(args: SetMirrorLineArgs) {
     .forEach(el => el.remove())
   }
 
+  piece.changed = true
   return data
 }
 

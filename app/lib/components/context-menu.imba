@@ -34,13 +34,12 @@ tag context-menu
 				if data..anchorClicked
 					<div.menu-item>
 						<span.material-icons-outlined> "align_horizontal_center"
-						if data..selectedPiece.mirrorLine.length == 0 || data..selectedPiece.mirrorLine[1]
+						if data..selectedPiece.mirrorLine[0] == null
 							<span @click=(setMirrorLine e)> "Set Mirror Line (Point 1)"
-						else
+						if data..selectedPiece.mirrorLine[0] != null && data..selectedPiece.mirrorLine[1] == null
 							<span @click=(setMirrorLine e)> "Set Mirror Line (Point 2)"
-					<div.menu-item>
-						<span.material-icons-outlined> "align_horizontal_center"
-						<span @click=(removeMirrorLine e)> "Remove Mirror Line"
+						if data..selectedPiece.mirrorLine[1]
+							<span @click=(removeMirrorLine e)> "Remove Mirror Line"
 				<div.menu-item>
 					<span.material-icons-outlined> "laptop"
 					<span @click=(console.log data)> "Dump Data to Logs"
