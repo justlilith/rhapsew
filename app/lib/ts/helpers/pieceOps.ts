@@ -14,7 +14,7 @@ function addPiece(args: PieceArgs): State {
 
   console.info('Rhapsew [Info]: Adding a new piece')
 
-  let newPiece: PieceT = { changed: true, points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null } // wait nvm
+  let newPiece: PieceT = { changed: true, points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null, pathString: null } // wait nvm
   newPiece.points[0] = addPoint({ data, event, pieceId: newPiece.id }) // trying this out
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
@@ -90,11 +90,7 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
   let renderedPiece = args.piece
   let id = args.pieceId
   const draw = AppOps.initSVGCanvas(data)
-  // draw.find(`[data-bounding-box-id="${id}"]`).forEach(el => el.remove())
-  // draw.find(`.bounding-box`).forEach(el => el.remove())
-  // let box = draw.find(`.bounding-box`)
-  // let box = renderedPiece.find(`.bounding-box`)
-  // let box = renderedPiece.find(`[data-bounding-box-id="${piece.id}"]`)
+
   if (data.selectedPiece && id == data.selectedPiece.id) {
     let handleWidth = 10
     let bbox = renderedPiece.bbox()
@@ -110,6 +106,7 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
       .fill('none')
       .data('bounding-box-id', id)
       .addClass('bounding-box')
+      .addClass('rhapsew-element')
 
     let handleBottomRight = SVG()
       .rect(handleWidth, handleWidth)
@@ -190,6 +187,7 @@ function generatePiece(args: GeneratePieceArgs): G {
         // L
       } else if (piece.closed) {
         pathString += ` L ${pointPieceOrigin.x} ${pointPieceOrigin.y}`
+        piece.pathString = pathString
         // L
       }
     }
@@ -249,9 +247,6 @@ function generatePiece(args: GeneratePieceArgs): G {
         draw.find('.hover-measure').forEach(element => element.remove())
       })
 
-    // draw.add(segment)
-    // draw.add(segmentWrangler)
-
     if (point.type == 'control') { // C, S
       let parent = data.pieces.filter(p => p.id == piece.id)[0].points.filter(p => p.id == point.parent.id)[0]
       draw.find(`[data-control-line-id="${point.id}"]`) ? draw.find(`[data-control-line-id="${point.id}"]`).forEach(line => line.remove()) : null
@@ -266,7 +261,6 @@ function generatePiece(args: GeneratePieceArgs): G {
         .addClass('rhapsew-element')
 
       draw.add(controlLine)
-      // renderedPath += ` L ${point.x} ${point.y}`
     }
 
     const domSegment = draw.find(`[data-point-id = "${point.id}"`)?.[0]
@@ -274,21 +268,12 @@ function generatePiece(args: GeneratePieceArgs): G {
       if (!_.isEqual(AppOps.shallowCopy(domSegment.data("piece")), AppOps.shallowCopy(piece))) {
         console.info(`Rhapsew [Info]: Rerendering piece: ${piece.id}`)
         draw.find('.rhapsew-element').forEach(element => element.remove())
-        // let box = draw.find(`[data-bounding-box-id="${piece.id}"]`)
-        // box ? box.forEach(el => el.remove()) : null
         renderedPiece.add(segmentWrangler)
         renderedPiece.add(segment)
-        // piece.points.forEach(point => {
-        //   renderPoint({ id: point.id, data, point, piece })
-        // })
-        // }
       }
     } else {
       renderedPiece.add(segmentWrangler)
       renderedPiece.add(segment)
-      // piece.points.forEach(point => {
-      //   renderPoint({ id: point.id, data, point, piece })
-      // })
     }
   })
 

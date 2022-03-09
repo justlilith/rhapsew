@@ -9,16 +9,27 @@ import * as PieceOps from '$lib/ts/helpers/pieceOps'
 function deleteKey(args: HandleKeyboardArgs): State {
   let data = args.data
   console.info('Rhapsew [Info]: Key pressed: Delete')
-  if (data.selectedPoint) {
-    PieceOps.wipe(data)
-    data.pieces = args.data.pieces.map(piece => {
-      const newPoints = piece.points.filter(point => point.id != data.selectedPoint.id || (point.parent ? point.parent.id != data.selectedPoint.id : false))
-      // PieceOps.renderPiece({ data, piece: { ...piece, points: newPoints } })
-      data.selectedPiece.points = newPoints
-      return { ...piece, points: newPoints }
-    })
+  PieceOps.wipe(data)
+  if (data.selectedPiece) {
+    if (data.selectedPoint) {
+      data.pieces = data.pieces.map(piece => {
+        const newPoints = piece.points.filter(point => {
+          let flag = false
+          point.id == data.selectedPoint.id ? null : flag = true
+          if (point.parent && point.parent.id == data.selectedPoint.id) {
+            flag = true
+          }
+          return flag
+        })
+        data.selectedPiece.points = newPoints
+        return { ...piece, points: newPoints }
+      })
+    } else { // by jove, get rid of the whole piece!
+      data.pieces = data.pieces.filter(piece => piece.id != data.selectedPiece.id)
+    }
   }
 
+  data.status = 'Delete'
   return args.data
 }
 

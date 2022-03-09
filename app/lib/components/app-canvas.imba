@@ -23,6 +23,12 @@ tag app-canvas
 		# setInterval(&,1000) do
 		# 	console.log data
 
+	def force-render
+		# AppOps.cleanCanvas
+		for piece of data.pieces
+			piece.changed = true
+
+
 	def handleZoom(event)
 		# console.log event
 		# console.log data.zoom
@@ -52,7 +58,7 @@ tag app-canvas
 	# @keypress=(console.log)
 	@click=(do (handleClick e))
 	@rhapsewZoom=(do (handleZoom e))
-	@paste=(do(e) (data = await AppOps.pastePiece {data, event: e}) )
+	@paste=(do(e) (HistoryManager.append await AppOps.pastePiece {data, event: e}) )
 	@contextmenu.prevent=(do (handleClick e))
 	@mousemove=(do (data = AppOps.handleMousemove {data, event: e}))
 	@mousedown=(do (handleMousedown e))
@@ -60,10 +66,11 @@ tag app-canvas
 	@hotkey('a')=(do (data = AppOps.switchTools {data, tool: "anchor"}))
 	@hotkey('p')=(do (data = AppOps.switchTools {data, tool: "piece"}))
 	@hotkey('esc')=(do (HistoryManager.append (KeyboardOps.escape {data})))
-	@hotkey('del')=(do (HistoryManager.append (KeyboardOps.deleteKey {data})))
-	@hotkey('ctrl+z')=(do (PieceOps.wipe data; HistoryManager.undo!))
-	@hotkey('ctrl+shift+z')=(do (PieceOps.wipe data; HistoryManager.redo!))
-	@hotkey('ctrl+y')=(do (PieceOps.wipe data; HistoryManager.redo!))
+	@hotkey('del')=(do (HistoryManager.append (KeyboardOps.deleteKey {data}); force-render!))
+	@hotkey('backspace')=(do (HistoryManager.append (KeyboardOps.deleteKey {data}); force-render!))
+	@hotkey('ctrl+z')=(do (PieceOps.wipe data; HistoryManager.undo!; force-render!))
+	@hotkey('ctrl+shift+z')=(do (PieceOps.wipe data; HistoryManager.redo!; force-render!))
+	@hotkey('ctrl+y')=(do (PieceOps.wipe data; HistoryManager.redo!; force-render!))
 	# @hotkey('space')=(do (data.currentTool = 'pan'))
 	@hotkey('space').repeat=(do (if data.mousedown then data.panning = true; data.status = 'Panning'))
 	@hotkey('ctrl').repeat=(do (if data.mousedown then data.lockScale = false else data.lockScale = true))

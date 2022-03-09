@@ -17,6 +17,17 @@ async function copyPiece(args: CopyPieceArgs) {
   return data
 }
 
+function cleanCanvas(args): void {
+  let data = args.data
+  let draw = initSVGCanvas(args.data)
+  draw.find('.spark-guide').forEach(element => element.remove())
+  draw.find(`.bounding-box`).concat(draw.find(`.bounding-box-handle`)).forEach(el => {
+    if (el.data('bounding-box-id') != data?.selectedPiece?.id) {
+      el.remove()
+    }
+  })
+}
+
 function clearScreen(args): State {
   let data: State = args.data
 
@@ -102,7 +113,7 @@ function handleMousedown(args: HandleMouseArgs): State {
     switch (event.button) {
       case 2: {
         data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
-        draw.find('.activeLine').forEach(element => element.remove())
+        draw.find('.active-line').forEach(element => element.remove())
         let pieceId: string = event.target.getAttribute('data-pieceId')
         let point: PointT = JSON.parse(event.target.getAttribute('data-point'))
         data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
@@ -112,7 +123,7 @@ function handleMousedown(args: HandleMouseArgs): State {
       case 0:
       default: {
         data = toggleContextMenu({ data, state: 'off', x: event.clientX, y: event.clientY })
-        draw.find('.activeLine').forEach(element => element.remove())
+        draw.find('.active-line').forEach(element => element.remove())
 
         let domPoint: PointT = JSON.parse(event.target.getAttribute('data-point'))
         let id = domPoint.id
@@ -131,7 +142,7 @@ function handleMousedown(args: HandleMouseArgs): State {
           console.info(`Rhapsew [Info]: Closing piece: ${data.selectedPiece.id}`)
         }
 
-        draw.find('.activeLine').forEach(element => element.remove())
+        draw.find('.active-line').forEach(element => element.remove())
         data.pieces.filter(piece => piece.id == data.selectedPiece.id)[0].points.forEach(point => point.id == id ? point.active = true : point.active = false)
         data.selectedPiece.points.forEach(point => point.id == id ? point.active = true : point.active = false)
       }
@@ -186,7 +197,7 @@ function handleMousedown(args: HandleMouseArgs): State {
     switch (event.button) {
       case 2: // right-click
         data = toggleContextMenu({ data, state: 'on', x: event.clientX, y: event.clientY })
-        draw.find('.activeLine').forEach(element => element.remove())
+        draw.find('.active-line').forEach(element => element.remove())
         data.selectedPiece ? data.selectedPiece.changed = true : null
         break
       case 0:
@@ -276,8 +287,11 @@ function handleMousemove(args: HandleMoveArgs) {
 
   draw.find('.spark-guide').forEach(element => element.remove())
 
-  if (!data.contextMenu && data?.selectedPiece?.points?.slice(-1)?.[0]?.active && data.selectedPiece.closed == false) {
-    draw.find('.activeLine').forEach(element => element.remove())
+  if (!data.contextMenu
+    && data?.selectedPiece?.points?.slice(-1)?.[0]?.active
+    && data.selectedPiece.closed == false
+  ) {
+    draw.find('.active-line').forEach(element => element.remove())
     draw.find('.spark-guide').forEach(element => element.remove())
 
     let coords = { x: verticalNeighbor?.x ?? currentCoords.x, y: horizontalNeighbor?.y ?? currentCoords.y }
@@ -291,7 +305,7 @@ function handleMousemove(args: HandleMoveArgs) {
     }
     let activeLine = SVG()
       .line([data.selectedPiece.points.slice(-1)[0].x, data.selectedPiece.points.slice(-1)[0].y, coords.x + 5, coords.y + 5])
-      .addClass('activeLine')
+      .addClass('active-line')
       .addClass('rhapsew-element')
       .stroke("red")
 
@@ -535,14 +549,8 @@ function handleMousemove(args: HandleMoveArgs) {
 function handleMouseup(args: HandleMouseArgs): State {
   let data = args.data
   let event = args.event
-  let draw = initSVGCanvas(data)
 
-  draw.find('.spark-guide').forEach(element => element.remove())
-  draw.find(`.bounding-box`).concat(draw.find(`.bounding-box-handle`)).forEach(el => {
-    if (el.data('bounding-box-id') != data?.selectedPiece?.id) {
-      el.remove()
-    }
-  })
+  cleanCanvas({ data })
 
   data.moving = false
   data.mousedown = false
@@ -594,31 +602,46 @@ async function pastePiece(args: PastePieceArgs) {
   let newPiece: PieceT = null
   let event = args.event
   data.status = 'Paste'
-  console.log(args.event)
   try {
     newPiece = JSON.parse(
       await navigator.clipboard.readText()
-      .catch(res => {
-        data.status = res
-        return null
-      })
-      )
+        .catch(res => {
+          data.status = res
+          return null
+        })
+    )
   } catch (e) {
-    const clipboardData:string|null = event.clipboardData.getData('Text')
+    const clipboardData: string | null = event.clipboardData.getData('text/plain')
     data.status = 'Paste'
     newPiece = JSON.parse(clipboardData)
   }
+
   if (newPiece) {
-    newPiece.id = nanoid()
+    const newPieceId = nanoid()
+    newPiece.id = newPieceId
+    let pointMap = new Map<string, string>()
     newPiece.points.forEach(point => {
+      const newId = nanoid()
+      pointMap.set(point.id, newId)
+      point.id = newId
       point.x += 30
       point.y += 30
-      point.id = nanoid()
-      return point
+      point.pieceId = newPieceId
     })
-    newPiece.changed = true
+    console.log(newPiece.points)
+    newPiece.points.forEach(point => {
+      if (point.type == "control") {
+        point.parent = newPiece.points
+          .filter(p => p.id == pointMap.get(point.parent.id))[0]
+      }
+      point.pairId ? point.pairId = pointMap.get(point.pairId) : null
+      console.log(point?.parent)
+    })
+
     data.pieces = data.pieces.concat(newPiece)
+    data.pieces.forEach(piece => piece.changed = true)
     data.selectedPiece = data.pieces.filter(piece => piece.id == newPiece.id)[0]
+    cleanCanvas({ data })
   }
   return data
 }
@@ -668,7 +691,8 @@ function writeToStatus() {
 }
 
 export {
-  clearScreen
+  cleanCanvas
+  , clearScreen
   , copyPiece
   , exportSvg
   , handleClick

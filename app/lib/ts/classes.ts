@@ -10,6 +10,7 @@ class Piece {
     this.closed = false
     this.mirrorLine = []
     this.mousedownSize = null
+    this.pathString = null
   }
   points: PointT[]
   name: string = "init"
@@ -17,6 +18,7 @@ class Piece {
   id: string
   mirrorLine: PointT[]
   mousedownSize: { width: number, height: number }
+  pathString: string | null
 }
 
 class Point {

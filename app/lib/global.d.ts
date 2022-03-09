@@ -33,6 +33,7 @@ interface PieceT {
   mousedownSize: { width: number, height: number, x: number, y: number }
   name: string
   offset: { x: number, y: number }
+  pathString: string | null
   points: PointT[]
 }
 
@@ -57,6 +58,7 @@ interface PointT {
   offset: { x: number, y: number }
   parent?: PointT
   pairId?: string
+  pieceId: string
   type: "anchor" | "control"
   x: number
   y: number
