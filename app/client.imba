@@ -9,6 +9,7 @@ import * as Utilities from '$lib/ts/helpers/utilities'
 
 let state\State =
 	{
+		alwaysShowPathLengths: true
 		anchorClicked: false
 		canvasClicked: false
 		contextMenu: false

@@ -18,6 +18,9 @@ tag settings-menu
 		<p> "Theme"
 		<button @click=(do (data.currentTheme = "dark")) .{data.currentTheme == "dark" ? "enabled" : "disabled"}> "Dark"
 		<button @click=(do (data.currentTheme = "light")) .{data.currentTheme == "light" ? "enabled" : "disabled"}> "Light"
+		<p> "Always Show Path Lengths"
+		<button @click=(do (data.alwaysShowPathLengths = true)) .{data.alwaysShowPathLengths == true ? "enabled" : "disabled"}> "On"
+		<button @click=(do (data.alwaysShowPathLengths = false)) .{data.alwaysShowPathLengths == false ? "enabled" : "disabled"}> "Off"
 
 css .self c:white bgc:black zi:30 m:0px p:1em pos:absolute w:calc(100% - 2em)
 	input bgc:black bd:thin solid gray2 c:gray2 p:0.5em

@@ -1,9 +1,9 @@
-import { G, SVG } from '@svgdotjs/svg.js'
+import { G, Svg, SVG } from '@svgdotjs/svg.js'
 import { Piece, Point } from '$lib/ts/classes'
 import * as AppOps from '$lib/ts/helpers/appOps'
 import * as Utilities from '$lib/ts/helpers/utilities'
 import { nanoid } from 'nanoid'
-import * as History from '$lib/ts/helpers/HistoryManager'
+// import * as History from '$lib/ts/helpers/HistoryManager'
 import * as _ from 'lodash'
 
 
@@ -14,7 +14,7 @@ function addPiece(args: PieceArgs): State {
 
   console.info('Rhapsew [Info]: Adding a new piece')
 
-  let newPiece: PieceT = { changed: true, points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null, pathString: null } // wait nvm
+  let newPiece: PieceT = { changed: true, points: [], name: "test", closed: false, id: nanoid(), mirrorLine: [], offset: null, mousedownSize: null, pathString: null, seamAllowance: 0 } // wait nvm
   newPiece.points[0] = addPoint({ data, event, pieceId: newPiece.id }) // trying this out
   data.pieces = data.pieces.concat(newPiece) // <- This works fine
   // data.selectedPiece = newPiece
@@ -137,11 +137,43 @@ function generateBoundingBox(args: GenerateBoundingBoxArgs): G {
       .x(extents.x + extents.width - (handleWidth / 2))
       .y(extents.y - (handleWidth / 2))
 
+    let marginBottomRight = SVG()
+      .rect(handleWidth * 2, handleWidth * 2)
+      // .stroke({
+      //   color: 'white',
+      //   width: 1
+      // })
+      .fill('hsla(0,0%,0%,0.0)')
+      .x(extents.x + extents.width - (handleWidth * 2 / 2))
+      .y(extents.y + extents.height - (handleWidth * 2 / 2))
+      .data('bounding-box-id', id)
+      .addClass('bounding-box-handle')
+      .addClass('rhapsew-element')
+
+    let marginBottomLeft = marginBottomRight
+      .clone()
+      .x(extents.x - (handleWidth * 2 / 2))
+      .y(extents.y + extents.height - (handleWidth * 2 / 2))
+
+    let marginTopLeft = marginBottomRight
+      .clone()
+      .x(extents.x - (handleWidth * 2 / 2))
+      .y(extents.y - (handleWidth * 2 / 2))
+
+    let marginTopRight = marginBottomRight
+      .clone()
+      .x(extents.x + extents.width - (handleWidth * 2 / 2))
+      .y(extents.y - (handleWidth * 2 / 2))
+
     renderedPiece.add(boundingBox)
     renderedPiece.add(handleBottomRight)
     renderedPiece.add(handleBottomLeft)
     renderedPiece.add(handleTopLeft)
     renderedPiece.add(handleTopRight)
+    renderedPiece.add(marginBottomRight)
+    renderedPiece.add(marginBottomLeft)
+    renderedPiece.add(marginTopLeft)
+    renderedPiece.add(marginTopRight)
   }
 
   return renderedPiece
@@ -191,7 +223,6 @@ function generatePiece(args: GeneratePieceArgs): G {
         // L
       }
     }
-
 
     const segment = SVG()
       .path(pathString)
@@ -246,6 +277,20 @@ function generatePiece(args: GeneratePieceArgs): G {
       .on('mouseout', (event) => {
         draw.find('.hover-measure').forEach(element => element.remove())
       })
+      
+      // const suffix = data.units == "imperial" ? "in" : "cm"
+      // const length = (segment.length() / data.dpi).toPrecision(5).toString() + suffix
+
+      // let annotation = SVG()
+      //   .text(length)
+      //   .attr({ x: segment.pointAt(segment.length()/2).x, y: segment.pointAt(segment.length()/2).y })
+      //   .font({
+      //     family: 'sans-serif'
+      //     , size: 12
+      //     , anchor: 'left'
+      //   })
+      //   .addClass('hover-measure')
+      //   .addClass('rhapsew-element')
 
     if (point.type == 'control') { // C, S
       let parent = data.pieces.filter(p => p.id == piece.id)[0].points.filter(p => p.id == point.parent.id)[0]
@@ -270,10 +315,16 @@ function generatePiece(args: GeneratePieceArgs): G {
         draw.find('.rhapsew-element').forEach(element => element.remove())
         renderedPiece.add(segmentWrangler)
         renderedPiece.add(segment)
+        if (data.alwaysShowPathLengths ) {
+          // renderedPiece.add(annotation)
+        }
       }
     } else {
       renderedPiece.add(segmentWrangler)
       renderedPiece.add(segment)
+      if (data.alwaysShowPathLengths ) {
+        // renderedPiece.add(annotation)
+      }
     }
   })
 
@@ -281,15 +332,44 @@ function generatePiece(args: GeneratePieceArgs): G {
 }
 
 
+function generateSeamAllowance(args) {
+  let data = args.data
+  let piece = args.piece
+  
+  const draw = AppOps.initSVGCanvas(data)
+  let renderedPiece = draw.find(`g[data-piece-id=${piece.id}]`)[0]
+
+  if (piece.seamAllowance != 0) {
+    let offset = SVG().path(piece.pathString)
+
+    offset
+      .data("piece", piece)
+      .attr({ fill: "none" })
+      .stroke({ color: "hsl(80, 100%, 50%)", width: piece.seamAllowance })
+      .addClass('seam-allowance')
+      .addClass('rhapsew-element')
+
+    let maskData = offset
+      .clone()
+      .stroke({ color: "hsl(30, 100%, 0%)", width: piece.seamAllowance - 2 })
+      .fill('black')
+    let mask = SVG().mask().add(maskData)
+    offset.maskWith(mask)
+
+    renderedPiece.add(offset)
+  }
+}
+
+
 function renderPiece(args: RenderPieceArgs): void {
   let data = args.data
   let piece = args.piece
   const draw = AppOps.initSVGCanvas(data)
-  
+
   data = setMirrorLine({ data, piece })
-  
+
   console.info(`Rhapsew [Info]: Rerendering!`)
-  
+
   let renderedPiece = generatePiece({ data, piece })
 
   if (piece.mirrorLine?.[0] && piece.mirrorLine?.[1]) {
@@ -325,6 +405,8 @@ function renderPiece(args: RenderPieceArgs): void {
   piece.points.forEach(point => {
     renderPoint({ id: point.id, data, point, piece, renderedPiece })
   })
+
+  generateSeamAllowance({data, piece})
 
   piece.changed = false
 }
@@ -402,7 +484,7 @@ function setMirrorLine(args: SetMirrorLineArgs) {
     piece.mirrorLine = []
     const draw = AppOps.initSVGCanvas(data)
     draw.find(`[data-mirror-line-id="${piece.id}"]`)
-    .forEach(el => el.remove())
+      .forEach(el => el.remove())
   }
 
   piece.changed = true

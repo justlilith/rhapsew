@@ -131,7 +131,10 @@ function handleMousedown(args: HandleMouseArgs): State {
 
         data.selectedPiece = data.pieces.filter(piece => piece.id == pieceId)[0]
         data.selectedPoint = domPoint
-        data.moving = true
+        
+        if (data.currentTool == 'anchor') {
+          data.moving = true
+        }
 
         console.info(`Rhapsew [Info]: Selected point: ${data?.selectedPoint}`)
         console.info(`Rhapsew [Info]: data.selectedPiece.id: ${data?.selectedPiece.id}`)
@@ -152,7 +155,7 @@ function handleMousedown(args: HandleMouseArgs): State {
 
   // console.log(event.target.classList)
 
-  if (classesAtPoint.includes('bounding-box-handle') && data.currentTool == "piece") {
+  if (classesAtPoint.includes('bounding-box-handle') && data.currentTool == "piece" && event.button == 0) {
     data.resizing = true
     data.moving = false
     data.pieceMoving = false
@@ -208,20 +211,22 @@ function handleMousedown(args: HandleMouseArgs): State {
         // data.selectedPoint = null
         // data.selectedPiece = null
         let domPiece = draw.find(`.rhapsew-piece`)
-        domPiece.forEach(dp => {
-          if (dp.inside(currentCoords.x, currentCoords.y)) {
-            data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
-            data.pieceMoving = true
-            data.selectedPiece.points.forEach(point => {
-              point.offset = {
-                x: point.x - currentCoords.x
-                , y: point.y - currentCoords.y
-              }
-              point.mousedownCoords.x = point.x
-              point.mousedownCoords.y = point.y
-            })
-          }
-        })
+        if (data.currentTool == 'piece') {
+          domPiece.forEach(dp => {
+            if (dp.inside(currentCoords.x, currentCoords.y)) {
+              data.selectedPiece = data.pieces.filter(piece => piece.id == dp.data('piece-id'))[0]
+              data.pieceMoving = true
+              data.selectedPiece.points.forEach(point => {
+                point.offset = {
+                  x: point.x - currentCoords.x
+                  , y: point.y - currentCoords.y
+                }
+                point.mousedownCoords.x = point.x
+                point.mousedownCoords.y = point.y
+              })
+            }
+          })
+        }
 
         if (data.selectedPiece) {
           if (data.selectedPiece.closed == false) { // piece is open

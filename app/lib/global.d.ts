@@ -1,4 +1,5 @@
 interface State {
+  alwaysShowPathLengths: boolean
   anchorClicked: boolean
   canvasClicked: boolean
   contextMenu: boolean
@@ -35,6 +36,7 @@ interface PieceT {
   offset: { x: number, y: number }
   pathString: string | null
   points: PointT[]
+  seamAllowance: number
 }
 
 interface NewPointArgs {
